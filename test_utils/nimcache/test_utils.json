@@ -1,8 +1,0 @@
-{"compile":[
-],
-"link":[
-"/home/kashiwara/Bacchus/test_utils/nimcache/test_utils.o",
-"/home/kashiwara/Bacchus/test_utils/nimcache/stdlib_system.o"
-],
-"linkcmd": "gcc   -o /home/kashiwara/Bacchus/test_utils/test_utils  /home/kashiwara/Bacchus/test_utils/nimcache/test_utils.o /home/kashiwara/Bacchus/test_utils/nimcache/stdlib_system.o    -ldl"
-}

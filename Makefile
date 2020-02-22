@@ -3,6 +3,7 @@ all:
 	nim compile lexer/lexer.nim
 	nim compile token/minitest.nim
 	nim compile lexer/minitest.nim
+	nim compile test_utils/test_utils.nim
 
 compile: 
 	nim compile --run token/token.nim

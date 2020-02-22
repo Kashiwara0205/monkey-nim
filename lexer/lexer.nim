@@ -19,4 +19,3 @@ proc peekChar*(lex: Lexer): byte {.inline.} =
     return 0
   else:
     return lex.input[lex.readPosition].byte
-

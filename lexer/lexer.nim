@@ -10,9 +10,17 @@ type
 proc newLexer*(input: string, position: int, readPosition: int, ch: byte): Lexer =
   return Lexer(input: input, position: position, readPosition: readPosition, ch: ch)
 
-proc get*(lex: Lexer, key: string): any =
-  case key
-  of "input": return lex.input
+proc input*(lex: Lexer): string {.inline.} =
+  return lex.input
+
+proc position*(lex: Lexer): int {.inline.} =
+  return lex.position
+
+proc readPosition*(lex: Lexer): int {.inline.} =
+  return lex.readPosition
+
+proc ch*(lex: Lexer): byte {.inline.} =
+  return lex.ch
 
 proc peekChar*(lex: Lexer): byte {.inline.} =
   if lex.readPosition >= lex.input.len():

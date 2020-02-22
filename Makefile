@@ -13,11 +13,16 @@ compile_test:
 	nim compile --run token/minitest.nim
 	nim compile --run lexer/minitest.nim
 
+compile_lexer:
+	nim compile --run token/minitest.nim
+	nim compile --run lexer/minitest.nim
+
 test:
 	./token/minitest
 	./lexer/minitest
 
 test_token:
 	./token/minitest
+
 test_lexter:
 	./lexer/minitest

@@ -1,9 +1,22 @@
+all:
+	nim compile token/token.nim
+	nim compile lexer/lexer.nim
+	nim compile token/minitest.nim
+	nim compile lexer/minitest.nim
+
 compile: 
 	nim compile --run token/token.nim
+	nim compile --run lexer/lexer.nim
+
+compile_test:
 	nim compile --run token/minitest.nim
-	
+	nim compile --run lexer/minitest.nim
+
 test:
-	nim compile --run token/minitest.nim
+	./token/minitest
+	./lexer/minitest
 
 test_token:
-	nim compile --run token/minitest.nim
+	./token/minitest
+test_lexter:
+	./lexer/minitest

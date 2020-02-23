@@ -11,20 +11,12 @@ compile:
 	nim compile --run token/token.nim
 	nim compile --run lexer/lexer.nim
 
-compile_test:
-	nim compile --run token/minitest.nim
-	nim compile --run lexer/minitest.nim
-
-compile_lexer:
-	nim compile --run token/minitest.nim
-	nim compile --run lexer/minitest.nim
-
 test:
-	./token/minitest
-	./lexer/minitest
+	nim compile --run token/minitest.nim
+	nim compile --run lexer/minitest.nim
 
-test_token:
-	./token/minitest
+lexer_test:
+	nim compile --run lexer/minitest.nim
 
-test_lexter:
-	./lexer/minitest
+token_test:
+	nim compile --run token/minitest.nim

@@ -1,12 +1,26 @@
 
 import tables
+from strformat import fmt
 
 type TokenType = string
 
 type
-  Token = object
-    Type: TokenType
-    Literal: string
+  Token = ref object
+    t_type: TokenType
+    literal: string
+
+# define new
+proc newToken*(tokenType: TokenType, ch: byte): Token =
+  # convert byte to char and char to string
+  let str = fmt"{$ch.byte.char}"
+  return Token(t_type: tokenType, literal: str)
+
+# define setter
+proc t_type*(token: Token): TokenType {.inline.} =
+  return token.t_type
+
+proc literal*(token: Token): string {.inline.} =
+  return token.literal
 
 const
   ILLEGAL = "ILLEGAL"

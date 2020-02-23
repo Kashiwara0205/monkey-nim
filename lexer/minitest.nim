@@ -3,6 +3,21 @@ import ../test_utils/test_utils as test
 
 # execute lexer test
 
+# outline: whether correct run proc readIdentifiter 
+# expected_value: get expected number string
+proc run_readIdentifiter_test(): void =
+  echo "Run readIdentifiter Test"
+  let input = "hogehoge1"
+  var lex = newLexer(input)
+  # [h]ogehoge1
+  test.eq_value(input, lex.input)
+  test.eq_value(0, lex.position)
+  test.eq_value(1, lex.readPosition)
+  test.eq_value(104.byte, lex.ch)
+
+  var ident = lex.readIdentifiter()
+  test.eq_value("hogehoge", ident)
+
 # outline: whether correct run proc readNumber 
 # expected_value: get expected number string
 proc run_readNumber_test(): void =
@@ -128,5 +143,6 @@ proc run_test(): void =
   run_readChar_test()
   run_skipWhitespace_test()
   run_readNumber_test()
+  run_readIdentifiter_test()
 
 run_test()

@@ -50,6 +50,14 @@ proc readNumber*(lex: Lexer): string =
   # instead of a <= x <= b, use a .. b
   return lex.input[position..( lex.position - 1)]
 
+proc readIdentifiter*(lex: Lexer): string =
+  let position = lex.position
+  while utils.is_letter(lex.ch):
+    lex.readChar
+
+  # instead of a <= x <= b, use a .. b
+  return lex.input[position..( lex.position - 1)]
+
 proc peekChar*(lex: Lexer): byte {.inline.} =
   if lex.readPosition >= lex.input.len():
     return 0

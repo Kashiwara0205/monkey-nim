@@ -42,6 +42,14 @@ proc readChar*(lex: Lexer): void {.inline.} =
   lex.position = lex.readPosition
   lex.readPosition += 1
 
+proc readNumber*(lex: Lexer): string =
+  let position = lex.position
+  while utils.is_digit(lex.ch):
+    lex.readChar
+
+  # instead of a <= x <= b, use a .. b
+  return lex.input[position..( lex.position - 1)]
+
 proc peekChar*(lex: Lexer): byte {.inline.} =
   if lex.readPosition >= lex.input.len():
     return 0
@@ -50,4 +58,4 @@ proc peekChar*(lex: Lexer): byte {.inline.} =
 
 proc skipWhitespace*(lex: Lexer): void =
   while utils.is_space(lex.ch.char):
-    lex.readChar()
+    lex.readChar()  

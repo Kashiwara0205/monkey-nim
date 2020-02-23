@@ -3,8 +3,38 @@ import ../test_utils/test_utils as test
 
 # execute lexer test
 
-# outline: whether skip expected location
-# expected_value: 
+# outline: whether correct run proc readNumber 
+# expected_value: get expected number string
+proc run_readNumber_test(): void =
+  echo "Run readNumber Test"
+  let input = "a3456b1c"
+  var lex = newLexer(input)
+  # [a]3456b1c
+  test.eq_value(input, lex.input)
+  test.eq_value(0, lex.position)
+  test.eq_value(1, lex.readPosition)
+  test.eq_value(97.byte, lex.ch)
+
+  lex.readChar()
+  var number = lex.readNumber()
+  test.eq_value("3456", number)
+
+  test.eq_value(input, lex.input)
+  test.eq_value(5, lex.position)
+  test.eq_value(6, lex.readPosition)
+  test.eq_value(98.byte, lex.ch)
+
+  lex.readChar()
+  number = lex.readNumber()
+  test.eq_value("1", number)
+
+  test.eq_value(input, lex.input)
+  test.eq_value(7, lex.position)
+  test.eq_value(8, lex.readPosition)
+  test.eq_value(99.byte, lex.ch)
+
+# outline: whether correct run proc skipWhitespace
+# expected_value: get expected property which skip space
 proc run_skipWhitespace_test(): void = 
   echo "Run skipWhitespace Test"
   let input = "a         b     c"
@@ -97,5 +127,6 @@ proc run_test(): void =
   run_peekChar_test()
   run_readChar_test()
   run_skipWhitespace_test()
+  run_readNumber_test()
 
 run_test()

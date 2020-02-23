@@ -7,9 +7,15 @@ type
     readPosition: int   # next read position
     ch: byte            # current looking chara
   
+# forward declaration
+proc readPosition*(lex: Lexer): int {.inline.} 
+proc readChar*(lex: Lexer): void {.inline.}
+
 # define new
-proc newLexer*(input: string, position: int, readPosition: int, ch: byte): Lexer =
-  return Lexer(input: input, position: position, readPosition: readPosition, ch: ch)
+proc newLexer*(input: string): Lexer =
+  let lex = Lexer(input: input, position: 0, readPosition: 0, ch: 0.byte)
+  lex.readChar()
+  return lex
 
 # define setter
 proc input*(lex: Lexer): string {.inline.} =

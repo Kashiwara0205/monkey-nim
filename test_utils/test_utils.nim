@@ -15,6 +15,10 @@ proc eq_value_with_testname*(testname: string, expected: any, val: any): void =
     echo ""
   else:
     e.msg = "Failure"
+    echo "expected"
+    echo expected
+    echo "val"
+    echo val
     raise e
     
 proc eq_value*(expected: any, val: any): void =
@@ -23,4 +27,8 @@ proc eq_value*(expected: any, val: any): void =
     echo ""
   else:
     e.msg = "Failure"
+    echo "expected"
+    echo expected
+    echo "val"
+    echo val
     raise e

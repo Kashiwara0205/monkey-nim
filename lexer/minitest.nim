@@ -40,9 +40,50 @@ proc run_peekChar_test(): void =
   lex = newLexer("abc", 0, 3, 0)
   eq_value(0.byte, lex.peekChar())
 
+# outline: get expected byte type value from readChar function
+# expected_value: expected byte value
+proc run_readChar_test(): void =
+  echo "Run readChar test"
+  output_testname("should get next byte type value")
+
+  var lex = newLexer("abc", 0, 0, 0)
+  # [ ] A B C
+  test.eq_value("abc", lex.input)
+  test.eq_value(0, lex.position)
+  test.eq_value(0, lex.readPosition)
+  test.eq_value(0.byte, lex.ch)
+
+  # [A] B C
+  lex.readChar()
+  test.eq_value("abc", lex.input)
+  test.eq_value(0, lex.position)
+  test.eq_value(1, lex.readPosition)
+  test.eq_value(97.byte, lex.ch)
+
+  # A [B] C
+  lex.readChar()
+  test.eq_value("abc", lex.input)
+  test.eq_value(1, lex.position)
+  test.eq_value(2, lex.readPosition)
+  test.eq_value(98.byte, lex.ch)
+
+  # A B [C]
+  lex.readChar()
+  test.eq_value("abc", lex.input)
+  test.eq_value(2, lex.position)
+  test.eq_value(3, lex.readPosition)
+  test.eq_value(99.byte, lex.ch)
+
+  # A B C []
+  lex.readChar()
+  test.eq_value("abc", lex.input)
+  test.eq_value(3, lex.position)
+  test.eq_value(4, lex.readPosition)
+  test.eq_value(0.byte, lex.ch)
 
 proc run_test(): void =
   run_newLexer_test()
   run_peekChar_test()
+  run_readChar_test()
 
 run_test()

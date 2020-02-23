@@ -8,3 +8,6 @@ proc is_letter*(ch: byte): bool =
   return ('a'.byte <= ch and ch <= 'z'.byte) or
          ('A'.byte <= ch and ch <= 'Z'.byte) or
          ('_'.byte == ch)
+
+proc is_str_end*(ch: byte): bool =
+  return ch == '"'.byte or ch == 0

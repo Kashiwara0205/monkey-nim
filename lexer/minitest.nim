@@ -2,6 +2,27 @@ import lexer
 import ../test_utils/test_utils as test
 
 # execute lexer test
+# outline: whether correct run proc readString 
+# expected_value: get expected string
+proc run_readString_test(): void =
+  echo "Run readString Test"
+  let input = "\"hogehoge\""
+  var lex = newLexer(input)
+  # ["]hogehoge"
+  test.eq_value(input, lex.input)
+  test.eq_value(0, lex.position)
+  test.eq_value(1, lex.readPosition)
+  test.eq_value(34.byte, lex.ch)
+
+  var ident = lex.readString()
+  test.eq_value("hogehoge", ident)
+
+  # "hogehoge"[]
+  lex.readChar()
+  test.eq_value(input, lex.input)
+  test.eq_value(10, lex.position)
+  test.eq_value(11, lex.readPosition)
+  test.eq_value(0.byte, lex.ch)
 
 # outline: whether correct run proc readIdentifiter 
 # expected_value: get expected number string
@@ -144,5 +165,6 @@ proc run_test(): void =
   run_skipWhitespace_test()
   run_readNumber_test()
   run_readIdentifiter_test()
+  run_readString_test()
 
 run_test()

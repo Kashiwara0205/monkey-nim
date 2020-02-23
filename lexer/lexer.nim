@@ -13,6 +13,9 @@ proc readPosition*(lex: Lexer): int {.inline.}
 proc readChar*(lex: Lexer): void {.inline.}
 proc newLexer*(input: string): Lexer
 proc skipWhitespace*(lex: Lexer): void
+proc readIdentifiter*(lex: Lexer): string
+proc readNumber*(lex: Lexer): string
+proc readString*(lex: Lexer): string
 
 # define setter
 proc input*(lex: Lexer): string {.inline.} =
@@ -54,6 +57,19 @@ proc readIdentifiter*(lex: Lexer): string =
   let position = lex.position
   while utils.is_letter(lex.ch):
     lex.readChar
+
+  # instead of a <= x <= b, use a .. b
+  return lex.input[position..( lex.position - 1)]
+
+proc readString*(lex: Lexer): string =
+  # move to string from double quotation
+  # ["]ab" → "[a]b"
+  let position = lex.position + 1
+
+  while true:
+    lex.readChar
+    if utils.is_str_end(lex.ch):
+      break
 
   # instead of a <= x <= b, use a .. b
   return lex.input[position..( lex.position - 1)]

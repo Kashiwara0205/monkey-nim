@@ -9,11 +9,8 @@ type
     t_type: TokenType
     literal: string
 
-# define new
-proc newToken*(tokenType: TokenType, ch: byte): Token =
-  # convert byte to char and char to string
-  let str = fmt"{$ch.byte.char}"
-  return Token(t_type: tokenType, literal: str)
+# forward declaration
+proc newToken*(tokenType: TokenType, ch: byte): Token
 
 # define setter
 proc t_type*(token: Token): TokenType {.inline.} =
@@ -21,6 +18,12 @@ proc t_type*(token: Token): TokenType {.inline.} =
 
 proc literal*(token: Token): string {.inline.} =
   return token.literal
+
+# define new
+proc newToken*(tokenType: TokenType, ch: byte): Token =
+  # convert byte to char and char to string
+  let str = fmt"{$ch.byte.char}"
+  return Token(t_type: tokenType, literal: str)
 
 const
   ILLEGAL = "ILLEGAL"

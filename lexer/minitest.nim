@@ -3,6 +3,36 @@ import ../test_utils/test_utils as test
 
 # execute lexer test
 
+# outline: whether skip expected location
+# expected_value: 
+proc run_skipWhitespace_test(): void = 
+  echo "Run skipWhitespace Test"
+  let input = "a         b     c"
+  var lex = newLexer(input)
+  # [a]         b     c
+  test.eq_value(input, lex.input)
+  test.eq_value(0, lex.position)
+  test.eq_value(1, lex.readPosition)
+  test.eq_value(97.byte, lex.ch)
+
+  lex.readChar()
+  lex.skipWhitespace()
+
+  # a         [b]     c
+  test.eq_value(input, lex.input)
+  test.eq_value(10, lex.position)
+  test.eq_value(11, lex.readPosition)
+  test.eq_value(98.byte, lex.ch)
+
+  lex.readChar()
+  lex.skipWhitespace()
+
+  # a         b     [c]
+  test.eq_value(input, lex.input)
+  test.eq_value(16, lex.position)
+  test.eq_value(17, lex.readPosition)
+  test.eq_value(99.byte, lex.ch)
+
 # outline: get expected byte from newLexer function
 # expected_value: expected boolean
 proc run_newLexer_test(): void =
@@ -66,5 +96,6 @@ proc run_test(): void =
   run_newLexer_test()
   run_peekChar_test()
   run_readChar_test()
+  run_skipWhitespace_test()
 
 run_test()

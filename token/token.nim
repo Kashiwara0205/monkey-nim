@@ -6,19 +6,12 @@ type TokenType = string
 
 type
   Token* = ref object
-    t_type: TokenType
-    literal: string
+    t_type*: TokenType
+    literal*: string
 
 # forward declaration
 proc newToken*(tokenType: TokenType, ch: byte): Token
 proc newMultiliteralToken*(tokenType: TokenType, str: string): Token
-
-# define setter
-proc t_type*(token: Token): TokenType {.inline.} =
-  return token.t_type
-
-proc literal*(token: Token): string {.inline.} =
-  return token.literal
 
 # define new
 proc newToken*(tokenType: TokenType, ch: byte): Token =

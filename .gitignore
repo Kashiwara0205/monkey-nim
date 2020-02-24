@@ -1,4 +1,5 @@
 lexer/nimcache/
 token/nimcache/
+ast/nimcache/
 test_utils/nimcache/
 utils/nimcache/

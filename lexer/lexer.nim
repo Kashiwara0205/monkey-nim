@@ -24,13 +24,12 @@ const
 
 type
   Lexer* = ref object
-    input: string       # input all source.
-    position: int       # current position
-    readPosition: int   # next read position
-    ch: byte            # current looking chara
+    input*: string       # input all source.
+    position*: int       # current position
+    readPosition*: int   # next read position
+    ch*: byte            # current looking chara
   
-# forward declaration
-proc readPosition*(lex: Lexer): int {.inline.} 
+# forward declaration 
 proc readChar*(lex: Lexer): void {.inline.}
 proc newLexer*(input: string): Lexer
 proc skipWhitespace*(lex: Lexer): void
@@ -40,19 +39,6 @@ proc readString*(lex: Lexer): string
 proc nextToken*(lex: Lexer): token.Token
 proc get_assign_or_eq_token(lex: Lexer): token.Token
 proc get_bang_or_not_eq_token(lex: Lexer): token.Token
-
-# define setter
-proc input*(lex: Lexer): string {.inline.} =
-  return lex.input
-
-proc position*(lex: Lexer): int {.inline.} =
-  return lex.position
-
-proc readPosition*(lex: Lexer): int {.inline.} =
-  return lex.readPosition
-
-proc ch*(lex: Lexer): byte {.inline.} =
-  return lex.ch
 
 # define new
 proc newLexer*(input: string): Lexer =

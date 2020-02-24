@@ -5,12 +5,13 @@ from strformat import fmt
 type TokenType = string
 
 type
-  Token = ref object
+  Token* = ref object
     t_type: TokenType
     literal: string
 
 # forward declaration
 proc newToken*(tokenType: TokenType, ch: byte): Token
+proc newMultiliteralToken*(tokenType: TokenType, str: string): Token
 
 # define setter
 proc t_type*(token: Token): TokenType {.inline.} =
@@ -25,38 +26,41 @@ proc newToken*(tokenType: TokenType, ch: byte): Token =
   let str = fmt"{$ch.byte.char}"
   return Token(t_type: tokenType, literal: str)
 
+proc newMultiliteralToken*(tokenType: TokenType, str: string): Token =
+  return Token(t_type: tokenType, literal: str)
+
 const
-  ILLEGAL = "ILLEGAL"
-  EOF = "EOF"
-  IDENT = "IDENT"
-  INT = "INT"
-  ASSIGN = "="
-  PLUS = "PLUS"
-  MINUS = "MINUS"
-  BANG = "!"
-  ASTERISK = "*"
-  SLASH = "/"
-  EQ = "=="
-  NOT_EQ = "!="
-  LT = "<"
-  GT = ">"
-  COMMA = ","
-  SEMICOLON = ";"
-  LPAREN = "("
-  RPAREN = ")"
-  LBRACE = "{"
-  RBRACE = "}"
-  LBRACKET = "]"
-  RBRACKET = "["
-  FUNCTION = "FUNCTION"
-  LET = "LET"
-  TRUE = "true"
-  FALSE = "false"
-  IF = "if"
-  ELSE = "else"
-  RETURN = "return"
-  STRING = "STRING"
-  COLON = ":"
+  ILLEGAL* = "ILLEGAL"
+  EOF* = "EOF"
+  IDENT* = "IDENT"
+  INT* = "INT"
+  ASSIGN* = "="
+  PLUS* = "+"
+  MINUS* = "-"
+  BANG* = "!"
+  ASTERISK* = "*"
+  SLASH* = "/"
+  EQ* = "=="
+  NOT_EQ* = "!="
+  LT* = "<"
+  GT* = ">"
+  COMMA* = ","
+  SEMICOLON* = ";"
+  LPAREN* = "("
+  RPAREN* = ")"
+  LBRACE* = "{"
+  RBRACE* = "}"
+  LBRACKET* = "["
+  RBRACKET* = "]"
+  FUNCTION* = "FUNCTION"
+  LET* = "LET"
+  TRUE* = "true"
+  FALSE* = "false"
+  IF* = "if"
+  ELSE* = "else"
+  RETURN* = "return"
+  STRING* = "STRING"
+  COLON* = ":"
 
 var keywords = {
   "fn": FUNCTION,

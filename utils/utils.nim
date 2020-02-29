@@ -11,3 +11,14 @@ proc isLetter*(ch: byte): bool =
 
 proc isStrEnd*(ch: byte): bool =
   return ch == '"'.byte or ch == 0
+
+proc cnvSeqStrToStr* (arr: seq[string]): string =
+  var str = ""
+  let size = arr.len
+  for i, elem in arr.pairs:
+    if (size - 1) > i:
+      str &= elem & ", "
+    else:
+      str &= elem
+
+  return str

@@ -3,27 +3,24 @@ import ../utils/utils
 
 # Interface
 type 
-  Node = ref object of RootObj
+  Node* = ref object of RootObj
 proc getTokenLiteral*(node: Node): string =
   return ""
 proc getValue*(node: Node): string =
   return ""
 
 # Interface
-type Statement = ref object of Node
+type Statement* = ref object of Node
   node: Node
 
 # Interface
-type Expression = ref object of Node
+type Expression* = ref object of Node
   node: Node
 
-# Interface
-type Literal = ref object of Node
-  node: Node
-
-type Identifier = ref object
-  tok: token.Token
-  variable_name: string
+# This type controll variable
+type Identifier* = ref object of Expression
+  tok*: token.Token
+  variable_name*: string
 
 proc getTokenLiteral*(identifier: Identifier): string =
   return identifier.tok.literal
@@ -31,9 +28,10 @@ proc getTokenLiteral*(identifier: Identifier): string =
 proc getValue*(identifier: Identifier): string =
   return identifier.variable_name
 
-type Boolean =  ref object
-  tok: token.Token
-  value: bool
+# This type controll boolean
+type Boolean* =  ref object of Expression
+  tok*: token.Token
+  value*: bool
 
 proc getTokenLiteral*(boolean: Boolean): string =
   return boolean.tok.literal
@@ -42,8 +40,8 @@ proc getValue*(boolean: Boolean): string =
   return boolean.tok.literal
 
 type
-  Program = ref object
-    statements :seq[Statement]
+  Program* = ref object
+    statements* :seq[Statement]
 
 proc getToeknLiteral*(p: Program): string =
   if p.statements.len() > 0:
@@ -61,10 +59,10 @@ proc getValue*(p: Program): string =
 # This type used by following program 
 # [let a = 5;]
 type
-  LetStatement = ref object of Statement
-    tok: token.Token
-    name: Identifier
-    expression: Expression
+  LetStatement* = ref object of Statement
+    tok*: token.Token
+    name*: Identifier
+    expression*: Expression
 
 proc getTokenLiteral*(statement: LetStatement): string =
   return statement.tok.literal
@@ -85,9 +83,9 @@ proc getValue*(statement: LetStatement): string =
 
 # This type used by following program 
 # [return value;]
-type ReturnStatement = ref object of Statement
-  tok: token.Token
-  expression: Expression
+type ReturnStatement* = ref object of Statement
+  tok*: token.Token
+  expression*: Expression
 
 proc getTokenLiteral*(statement: ReturnStatement): string =
   return statement.tok.literal
@@ -103,9 +101,9 @@ proc getValue*(statement: ReturnStatement): string =
 
 # This type used by following program 
 # [value;]
-type ExpressionStatement = ref object of Statement
-  tok: token.Token
-  expression: Expression
+type ExpressionStatement* = ref object of Statement
+  tok*: token.Token
+  expression*: Expression
 
 proc getTokenLiteral*(statement: ExpressionStatement): string =
   return statement.tok.literal
@@ -118,9 +116,9 @@ proc getValue*(statement: ExpressionStatement): string =
 
 # This type used by following program 
 # [5;]
-type IntegerLiteral = ref object of Literal
-  tok: token.Token
-  number: int64
+type IntegerLiteral* = ref object of Expression
+  tok*: token.Token
+  number*: int64
 
 proc getTokenLiteral*(literal: IntegerLiteral): string =
   return literal.tok.literal
@@ -130,10 +128,10 @@ proc getValue*(literal: IntegerLiteral): string =
 
 # This type used by following program 
 # [!] [ - ]
-type PrefixExpression = ref object of Expression
-  tok: token.Token
-  operator: string
-  right: Expression
+type PrefixExpression* = ref object of Expression
+  tok*: token.Token
+  operator*: string
+  right*: Expression
 
 proc getTokenLiteral*(expression: PrefixExpression): string =
   return expression.tok.literal
@@ -149,11 +147,11 @@ proc getValue*(expression: PrefixExpression): string =
 
 # This type used by following program 
 # [1 + 1] [1 < 1]
-type InfixExpression = ref object of Expression
-  tok: token.Token
-  left: Expression
-  operator: string
-  right: Expression
+type InfixExpression* = ref object of Expression
+  tok*: token.Token
+  left*: Expression
+  operator*: string
+  right*: Expression
 
 proc getTokenLiteral*(expression: InfixExpression): string =
   return expression.tok.literal
@@ -170,16 +168,16 @@ proc getValue*(expression: InfixExpression): string =
 
 # This type used by following program 
 # [{ }]
-type BlockStatement = ref object of Statement
-  tok: token.Token
-  statements :seq[Statement]
+type BlockStatement* = ref object of Statement
+  tok*: token.Token
+  statements* :seq[Statement]
 
-proc getTokenLiteral*(statment: BlockStatement): string =
-  return statment.tok.literal
+proc getTokenLiteral*(statement: BlockStatement): string =
+  return statement.tok.literal
 
-proc getValue*(statment: BlockStatement): string = 
+proc getValue*(statement: BlockStatement): string = 
   var str = ""
-  for elem in statment.statements:
+  for elem in statement.statements:
     str &= elem.getValue()
 
   return str
@@ -190,11 +188,11 @@ proc getValue*(statment: BlockStatement): string =
 #    xxx
 #  }
 # ]
-type IfExpression = ref object of Expression
-  tok: token.Token
-  condition: Expression
-  consequence: BlockStatement
-  alternative: BlockStatement
+type IfExpression* = ref object of Expression
+  tok*: token.Token
+  condition*: Expression
+  consequence*: BlockStatement
+  alternative*: BlockStatement
 
 proc getTokenLiteral*(expression: IfExpression): string =
   return expression.tok.literal
@@ -217,17 +215,17 @@ proc getValue*(expression: IfExpression): string =
 #    xxx
 #  }
 # ]
-type FunctionLiteral = ref object of Literal
-  tok: token.Token
-  parameters: seq[Identifier]
-  body: BlockStatement
+type FunctionLiteral* = ref object of Expression
+  tok*: token.Token
+  parameters*: ref seq[Identifier]
+  body*: BlockStatement
 
 proc getTokenLiteral*(literal: FunctionLiteral): string =
   return literal.tok.literal
 
 proc getValue*(literal: FunctionLiteral): string = 
   var params: seq[string]
-  for param in literal.parameters:
+  for param in literal.parameters[]:
     params.add(param.getValue())
 
   var str = literal.getTokenLiteral()
@@ -242,17 +240,17 @@ proc getValue*(literal: FunctionLiteral): string =
 # This type used by following program 
 # call function
 # [ fn() ]
-type CallExpression = ref object of Expression
-  tok: token.Token
-  function: Expression
-  arguments: seq[Expression]
+type CallExpression* = ref object of Expression
+  tok*: token.Token
+  function*: Expression
+  arguments*: ref seq[Expression]
 
 proc getTokenLiteral*(expression: CallExpression): string =
   return expression.tok.literal
 
 proc getValue*(expression: CallExpression): string = 
   var args: seq[string]
-  for arg in expression.arguments:
+  for arg in expression.arguments[]:
     args.add(arg.getValue())
 
   var str = expression.function.getValue()
@@ -264,9 +262,9 @@ proc getValue*(expression: CallExpression): string =
 
 # This type used by following program 
 # [ "abcde" ]
-type StringLiteral = ref object of Literal
-  tok: token.Token
-  value: string
+type StringLiteral* = ref object of Expression
+  tok*: token.Token
+  value*: string
 
 proc getTokenLiteral*(literal: StringLiteral): string =
   return literal.tok.literal
@@ -276,16 +274,16 @@ proc getValue*(literal: StringLiteral): string =
 
 # This type used by following program 
 # [ array[] ]
-type ArrayLiteral = ref object of Literal
-  tok: token.Token
-  elements: seq[Expression]
+type ArrayLiteral* = ref object of Expression
+  tok*: token.Token
+  elements*: ref seq[Expression]
 
 proc getTokenLiteral*(literal: ArrayLiteral): string =
   return literal.tok.literal
 
 proc getValue*(literal: ArrayLiteral): string = 
   var elements: seq[string]
-  for el in literal.elements:
+  for el in literal.elements[]:
     elements.add(el.getValue())
 
   var str = "["
@@ -296,10 +294,10 @@ proc getValue*(literal: ArrayLiteral): string =
 
 # This type used by following program 
 # [ [index] ]
-type IndexExpression = ref object of Expression 
-  tok: token.Token
-  left: Expression
-  index: Expression
+type IndexExpression* = ref object of Expression 
+  tok*: token.Token
+  left*: Expression
+  index*: Expression
 
 proc getTokenLiteral*(expression: IndexExpression): string = 
   return expression.tok.literal

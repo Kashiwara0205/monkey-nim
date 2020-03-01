@@ -1,3 +1,5 @@
+import nre
+
 proc isSpace*(val: char): bool =
   return val == ' ' or val == '\t' or val == '\n' or val == '\r'
 
@@ -22,3 +24,6 @@ proc cnvSeqStrToStr* (arr: seq[string]): string =
       str &= elem
 
   return str
+
+proc isStrDigit*(str: string): bool =
+  return str.match(re"([0-9]+)").isSome

@@ -2,7 +2,7 @@
 import tables
 from strformat import fmt
 
-type TokenType = string
+type TokenType* = string
 
 type
   Token* = ref object

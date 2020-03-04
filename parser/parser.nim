@@ -146,8 +146,9 @@ proc parseProgram*(parser: Parser): ast.Program =
 
   while parser.curToken.t_type != token.EOF:
     var statment = parser.parseStatement()
+
     if statment != nil:
-     prgoram.statements.add(statment)
+      prgoram.statements.add(statment)
 
     parser.nextToken()
 
@@ -192,6 +193,11 @@ proc parseLetStatement*(parser: Parser): ast.LetStatement =
   var statement = ast.LetStatement(tok: parser.curToken)
 
   if not parser.expectPeekTokenIs(token.IDENT):
+    return nil
+
+  statement.name = ast.Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
+
+  if not parser.expectPeekTokenIs(token.ASSIGN):
     return nil
 
   parser.nextToken()

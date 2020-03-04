@@ -1,9 +1,17 @@
 import ../token/token
+import ../ast/ast
+import ../lexer/lexer
+import ../parser/parser
 
 # prepare error handling
 var
   e: ref OSError
 new(e)
+
+proc get_program*(input: string): ast.Program =
+  let lex = lexer.newLexer(input)
+  let p = lex.newParser()
+  return p.parseProgram()
 
 proc output_testname*(testname: string): void =
   echo "+-+-+-+-+-+-+-+-+-+"

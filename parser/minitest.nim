@@ -82,3 +82,6 @@ block return_test:
   var identifier = Identifier(ast.ReturnStatement(statment).expression)
   test.eq_value("IDENT", identifier.tok.t_type)
   test.eq_value("x", identifier.variable_name)
+
+block identifier_test:
+  var program = test.get_program("x;")

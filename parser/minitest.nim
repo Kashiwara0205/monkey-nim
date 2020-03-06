@@ -368,3 +368,48 @@ block if_expression_test:
   # alternative
   block_statement = if_expression.alternative
   test.eq_value(true, block_statement == nil)
+
+  program = test.get_program("""
+  if(x < y){
+    x
+  }else{
+    y
+  }
+  """)
+
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  expression = ast.ExpressionStatement(statement)
+  if_expression = ast.IfExpression(expression.expression)
+
+  # if
+  test.eq_value("if", if_expression.tok.t_type)
+
+  # (x < y)
+  infix = ast.InfixExpression(if_expression.condition)
+  test.eq_value("<", infix.tok.t_type)
+  test.eq_value("<", infix.operator)
+  ident = Identifier(infix.right)
+  test.eq_value("IDENT", ident.tok.t_type)
+  test.eq_value("y", ident.variable_name)
+  ident = Identifier(infix.left)
+  test.eq_value("IDENT", ident.tok.t_type)
+  test.eq_value("x", ident.variable_name)
+
+  # { x }
+  block_statement = if_expression.consequence
+  test.eq_value(1, block_statement.statements.len)
+  statement = block_statement.statements[0]
+  test.eq_value("IDENT", ast.ExpressionStatement(statement).tok.t_type)
+  identifier = Identifier(ast.ExpressionStatement(statement).expression)
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("x", identifier.variable_name)
+
+  # { y }
+  block_statement = if_expression.alternative
+  test.eq_value(1, block_statement.statements.len)
+  statement = block_statement.statements[0]
+  test.eq_value("IDENT", ast.ExpressionStatement(statement).tok.t_type)
+  identifier = Identifier(ast.ExpressionStatement(statement).expression)
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("y", identifier.variable_name)

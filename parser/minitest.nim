@@ -1,6 +1,8 @@
 import ../ast/ast
 import ../test_utils/test_utils as test
 
+# outline: whther be able to parse let
+# expected_value: expected let statement
 block let_test:
   var program = test.get_program("let x = 5;")
 
@@ -35,6 +37,8 @@ block let_test:
   test.eq_value("INT", expression.tok.t_type)
   test.eq_value(5, expression.number)
 
+# outline: whther be able to parse return
+# expected_value: expected return statement
 block return_test:
   var program = test.get_program("return 5;")
 
@@ -83,6 +87,8 @@ block return_test:
   test.eq_value("IDENT", identifier.tok.t_type)
   test.eq_value("x", identifier.variable_name)
 
+# outline: whther be able to parse identifier
+# expected_value: expected identifier
 block identifier_test:
   var program = test.get_program("x;")
   test.eq_value(1, program.statements.len)
@@ -92,6 +98,8 @@ block identifier_test:
   test.eq_value("IDENT", identifier.tok.t_type)
   test.eq_value("x", identifier.variable_name)
 
+# outline: whther be able to parse integer_literal
+# expected_value: expected integer_literal
 block integer_literal_test:
   var program = test.get_program("5;")
   test.eq_value(1, program.statements.len)

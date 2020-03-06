@@ -3,9 +3,9 @@ import ../test_utils/test_utils as test
 
 # execute lexer test
 
-# outline: whether correct run proc nextToken 
+# outline: whether correct run proc nextToken
 # expected_value: get expected string
-proc run_nextToken_test(): void =
+block nextToken_test:
   echo "Run nextToken Test"
 
   # let five = 5;
@@ -117,7 +117,7 @@ proc run_nextToken_test(): void =
   tok = lex.nextToken()
   test.eq_token(tok, "EOF", "")
 
-  # !-/*5;  
+  # !-/*5;
   output_testname("!-/*5;")
   input = "!-/*5;"
   lex = newLexer(input)
@@ -136,7 +136,7 @@ proc run_nextToken_test(): void =
   tok = lex.nextToken()
   test.eq_token(tok, "EOF", "")
 
-  # 5 < 10 > 5;  
+  # 5 < 10 > 5;
   output_testname("5 < 10 > 5;")
   input = "5 < 10 > 5;"
   lex = newLexer(input)
@@ -297,9 +297,9 @@ proc run_nextToken_test(): void =
   tok = lex.nextToken()
   test.eq_token(tok, "EOF", "")
 
-# outline: whether correct run proc readString 
+# outline: whether correct run proc readString
 # expected_value: get expected string
-proc run_readString_test(): void =
+block readString_test:
   echo "Run readString Test"
   let input = "\"hogehoge\""
   var lex = newLexer(input)
@@ -319,9 +319,9 @@ proc run_readString_test(): void =
   test.eq_value(11, lex.readPosition)
   test.eq_value(0.byte, lex.ch)
 
-# outline: whether correct run proc readIdentifiter 
+# outline: whether correct run proc readIdentifiter
 # expected_value: get expected number string
-proc run_readIdentifiter_test(): void =
+block readIdentifiter_test:
   echo "Run readIdentifiter Test"
   let input = "hogehoge1"
   var lex = newLexer(input)
@@ -334,9 +334,9 @@ proc run_readIdentifiter_test(): void =
   var ident = lex.readIdentifiter()
   test.eq_value("hogehoge", ident)
 
-# outline: whether correct run proc readNumber 
+# outline: whether correct run proc readNumber
 # expected_value: get expected number string
-proc run_readNumber_test(): void =
+block readNumber_test:
   echo "Run readNumber Test"
   let input = "a3456b1c"
   var lex = newLexer(input)
@@ -366,7 +366,7 @@ proc run_readNumber_test(): void =
 
 # outline: whether correct run proc skipWhitespace
 # expected_value: get expected property which skip space
-proc run_skipWhitespace_test(): void = 
+block skipWhitespace_test:
   echo "Run skipWhitespace Test"
   let input = "a         b     c"
   var lex = newLexer(input)
@@ -396,7 +396,7 @@ proc run_skipWhitespace_test(): void =
 
 # outline: get expected byte from newLexer function
 # expected_value: expected boolean
-proc run_newLexer_test(): void =
+block newLexer_test:
   echo "Run newLexer test"
   var lex = newLexer("testtest")
   # check Lexer type
@@ -407,7 +407,7 @@ proc run_newLexer_test(): void =
 
 # outline: get expected byte type value from peekChar function
 # expected_value: expected byte value
-proc run_peekChar_test(): void =
+block peekChar_test:
   echo "Run peekChar test"
   output_testname("should return byte type value")
   # a [b]
@@ -420,7 +420,7 @@ proc run_peekChar_test(): void =
 
 # outline: get expected byte type value from readChar function
 # expected_value: expected byte value
-proc run_readChar_test(): void =
+block readChar_test:
   echo "Run readChar test"
   output_testname("should get next byte type value")
 
@@ -452,15 +452,3 @@ proc run_readChar_test(): void =
   test.eq_value(3, lex.position)
   test.eq_value(4, lex.readPosition)
   test.eq_value(0.byte, lex.ch)
-
-proc run_test(): void =
-  run_newLexer_test()
-  run_peekChar_test()
-  run_readChar_test()
-  run_skipWhitespace_test()
-  run_readNumber_test()
-  run_readIdentifiter_test()
-  run_readString_test()
-  run_nextToken_test()
-
-run_test()

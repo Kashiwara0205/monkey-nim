@@ -308,3 +308,22 @@ block infix_expression_test:
   boolean = Boolean(infix.left)
   test.eq_value("false", boolean.tok.t_type)
   test.eq_value(false, boolean.value)
+
+# outline: whther be able to parse boolean
+# expected_value: expected boolean
+block boolean_test:
+  var program = test.get_program("true;")
+  test.eq_value(1, program.statements.len)
+  var statement = program.statements[0]
+  var expression = ast.ExpressionStatement(statement)
+  var boolean = ast.Boolean(expression.expression)
+  test.eq_value("true", boolean.tok.t_type)
+  test.eq_value(true, boolean.value)
+
+  program = test.get_program("false;")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  expression = ast.ExpressionStatement(statement)
+  boolean = ast.Boolean(expression.expression)
+  test.eq_value("false", boolean.tok.t_type)
+  test.eq_value(false, boolean.value)

@@ -85,8 +85,18 @@ block return_test:
 
 block identifier_test:
   var program = test.get_program("x;")
+  test.eq_value(1, program.statements.len)
   var statement = program.statements[0]
   test.eq_value("IDENT", ast.ExpressionStatement(statement).tok.t_type)
   var identifier = Identifier(ast.ExpressionStatement(statement).expression)
   test.eq_value("IDENT", identifier.tok.t_type)
   test.eq_value("x", identifier.variable_name)
+
+block integer_literal_test:
+  var program = test.get_program("5;")
+  test.eq_value(1, program.statements.len)
+  var statement = program.statements[0]
+  test.eq_value("INT", ast.ExpressionStatement(statement).tok.t_type)
+  var integer_literal = IntegerLiteral(ast.ExpressionStatement(statement).expression)
+  test.eq_value("INT", integer_literal.tok.t_type)
+  test.eq_value(5, integer_literal.number)

@@ -280,8 +280,11 @@ proc parseGroupExpression*(parser: Parser): ast.Expression =
 
 proc parseIfExpression*(parser: Parser): ast.Expression =
   var expression = ast.IfExpression(tok: parser.curToken)
+
   if not parser.expectPeekTokenIs(token.LPAREN):
     return nil
+
+  parser.nextToken()
 
   expression.condition = parser.parseExpression(LOWSET)
 

@@ -327,3 +327,44 @@ block boolean_test:
   boolean = ast.Boolean(expression.expression)
   test.eq_value("false", boolean.tok.t_type)
   test.eq_value(false, boolean.value)
+
+# outline: whther be able to parse if expression
+# expected_value: expected if expression
+block if_expression_test:
+  var program = test.get_program("""
+  if(x < y){
+    x
+  }
+  """)
+
+  test.eq_value(1, program.statements.len)
+  var statement = program.statements[0]
+  var expression = ast.ExpressionStatement(statement)
+  var if_expression = ast.IfExpression(expression.expression)
+
+  # if
+  test.eq_value("if", if_expression.tok.t_type)
+
+  # (x < y)
+  var infix = ast.InfixExpression(if_expression.condition)
+  test.eq_value("<", infix.tok.t_type)
+  test.eq_value("<", infix.operator)
+  var ident = Identifier(infix.right)
+  test.eq_value("IDENT", ident.tok.t_type)
+  test.eq_value("y", ident.variable_name)
+  ident = Identifier(infix.left)
+  test.eq_value("IDENT", ident.tok.t_type)
+  test.eq_value("x", ident.variable_name)
+
+  # { x }
+  var block_statement = if_expression.consequence
+  test.eq_value(1, block_statement.statements.len)
+  statement = block_statement.statements[0]
+  test.eq_value("IDENT", ast.ExpressionStatement(statement).tok.t_type)
+  var identifier = Identifier(ast.ExpressionStatement(statement).expression)
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("x", identifier.variable_name)
+
+  # alternative
+  block_statement = if_expression.alternative
+  test.eq_value(true, block_statement == nil)

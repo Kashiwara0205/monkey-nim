@@ -109,6 +109,36 @@ block integer_literal_test:
   test.eq_value("INT", integer_literal.tok.t_type)
   test.eq_value(5, integer_literal.number)
 
+# outline: whther be able to parse string_literal
+# expected_value: expected string_literal
+block string_literal_test:
+  var program = test.get_program("\"kashiwara\"")
+  test.eq_value(1, program.statements.len)
+  var statement = program.statements[0]
+  test.eq_value("STRING", ast.ExpressionStatement(statement).tok.t_type)
+  var integer_literal = StringLiteral(ast.ExpressionStatement(statement).expression)
+  test.eq_value("STRING", integer_literal.tok.t_type)
+  test.eq_value("kashiwara", integer_literal.value)
+
+# outline: whther be able to parse boolean
+# expected_value: expected boolean
+block boolean_test:
+  var program = test.get_program("true;")
+  test.eq_value(1, program.statements.len)
+  var statement = program.statements[0]
+  var expression = ast.ExpressionStatement(statement)
+  var boolean = ast.Boolean(expression.expression)
+  test.eq_value("true", boolean.tok.t_type)
+  test.eq_value(true, boolean.value)
+
+  program = test.get_program("false;")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  expression = ast.ExpressionStatement(statement)
+  boolean = ast.Boolean(expression.expression)
+  test.eq_value("false", boolean.tok.t_type)
+  test.eq_value(false, boolean.value)
+
 # outline: whther be able to parse prefix_expression
 # expected_value: expected prefix_expression
 block prefix_expression_test:
@@ -306,25 +336,6 @@ block infix_expression_test:
   test.eq_value("false", boolean.tok.t_type)
   test.eq_value(false, boolean.value)
   boolean = Boolean(infix.left)
-  test.eq_value("false", boolean.tok.t_type)
-  test.eq_value(false, boolean.value)
-
-# outline: whther be able to parse boolean
-# expected_value: expected boolean
-block boolean_test:
-  var program = test.get_program("true;")
-  test.eq_value(1, program.statements.len)
-  var statement = program.statements[0]
-  var expression = ast.ExpressionStatement(statement)
-  var boolean = ast.Boolean(expression.expression)
-  test.eq_value("true", boolean.tok.t_type)
-  test.eq_value(true, boolean.value)
-
-  program = test.get_program("false;")
-  test.eq_value(1, program.statements.len)
-  statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  boolean = ast.Boolean(expression.expression)
   test.eq_value("false", boolean.tok.t_type)
   test.eq_value(false, boolean.value)
 

@@ -413,3 +413,97 @@ block if_expression_test:
   identifier = Identifier(ast.ExpressionStatement(statement).expression)
   test.eq_value("IDENT", identifier.tok.t_type)
   test.eq_value("y", identifier.variable_name)
+
+# outline: whther be able to parse if expression
+# expected_value: expected if expression
+block function_expression_test:
+  var program = test.get_program("""
+  fn(x,  y){
+    x + y;
+  }
+  """)
+
+  test.eq_value(1, program.statements.len)
+  var statement = program.statements[0]
+  var expression = ast.ExpressionStatement(statement)
+  var function_literal = ast.FunctionLiteral(expression.expression)
+
+  # fn
+  test.eq_value("FUNCTION", function_literal.tok.t_type)
+
+  # (x, y)
+  var parameters = function_literal.parameters
+  test.eq_value(2, parameters[].len)
+  var identifier = parameters[0]
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("x", identifier.variable_name)
+  identifier = parameters[1]
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("y", identifier.variable_name)
+
+  # { x + y; }
+  var block_statement = function_literal.body
+  test.eq_value(1, block_statement.statements.len)
+  statement = block_statement.statements[0]
+  expression = ast.ExpressionStatement(statement)
+  var infix = ast.InfixExpression(expression.expression)
+  test.eq_value("+", infix.tok.t_type)
+  test.eq_value("+", infix.operator)
+  identifier = Identifier(infix.right)
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("y", identifier.variable_name)
+  identifier = Identifier(infix.left)
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("x", identifier.variable_name)
+
+  program = test.get_program("""
+  fn(){
+  }
+  """)
+
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  expression = ast.ExpressionStatement(statement)
+  function_literal = ast.FunctionLiteral(expression.expression)
+
+  # fn
+  test.eq_value("FUNCTION", function_literal.tok.t_type)
+
+  # ()
+  parameters = function_literal.parameters
+  test.eq_value(0, parameters[].len)
+
+  # { }
+  block_statement = function_literal.body
+  test.eq_value(0, block_statement.statements.len)
+
+
+  program = test.get_program("""
+  fn(x){
+    x;
+  }
+  """)
+
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  expression = ast.ExpressionStatement(statement)
+  function_literal = ast.FunctionLiteral(expression.expression)
+
+  # fn
+  test.eq_value("FUNCTION", function_literal.tok.t_type)
+
+  # (x)
+  parameters = function_literal.parameters
+  test.eq_value(1, parameters[].len)
+  identifier = parameters[0]
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("x", identifier.variable_name)
+
+  # { x; }
+  block_statement = function_literal.body
+  test.eq_value(1, block_statement.statements.len)
+  statement = block_statement.statements[0]
+  expression = ast.ExpressionStatement(statement)
+  identifier = Identifier(expression.expression)
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("x", identifier.variable_name)

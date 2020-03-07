@@ -358,6 +358,12 @@ proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[ast.Exp
   list.new
   list[] = @[]
 
+  if parser.peekTokenIs(tok):
+    parser.nextToken()
+    return list
+
+  list[].add(parser.parseExpression(LOWSET))
+
   while parser.peekTokenIs(token.COMMA):
     parser.nextToken()
     parser.nextToken()
@@ -370,7 +376,7 @@ proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[ast.Exp
 
 proc parseCallExpression*(parser: Parser, function: ast.Expression): ast.Expression =
   var expression = ast.CallExpression(tok: parser.curToken, function: function)
-  expression.arguments = parser.parseExpressionList(token.RPAREN)
+  expression.arguments = parser.parseCallArguments()
 
   return expression
 

@@ -414,8 +414,8 @@ block if_expression_test:
   test.eq_value("IDENT", identifier.tok.t_type)
   test.eq_value("y", identifier.variable_name)
 
-# outline: whther be able to parse if expression
-# expected_value: expected if expression
+# outline: whther be able to parse fn expression
+# expected_value: expected fn expression
 block function_expression_test:
   var program = test.get_program("""
   fn(x,  y){
@@ -507,3 +507,52 @@ block function_expression_test:
   identifier = Identifier(expression.expression)
   test.eq_value("IDENT", identifier.tok.t_type)
   test.eq_value("x", identifier.variable_name)
+
+# outline: whther be able to parse call expression
+# expected_value: expected call expression
+block call_expression_test:
+  var program = test.get_program("add(1, 2 * 3, x + y)")
+
+  test.eq_value(1, program.statements.len)
+  var statement = program.statements[0]
+  var expression = ast.ExpressionStatement(statement)
+  var call_expression = ast.CallExpression(expression.expression)
+
+  # add  
+  var function =  ast.Identifier(call_expression.function)
+  test.eq_value("IDENT", function.tok.t_type)
+  test.eq_value("add", function.variable_name)
+  test.eq_value("(", call_expression.tok.t_type)
+
+  # arguments
+  var arguments = call_expression.arguments
+  test.eq_value(3, arguments[].len)
+
+  # 1
+  var arg = arguments[][0]
+  test.eq_value("INT", ast.IntegerLiteral(arg).tok.t_type)
+  test.eq_value(1, ast.IntegerLiteral(arg).number)
+
+  # 2 * 3
+  arg = arguments[][1]
+  var infix = ast.InfixExpression(arg)
+  test.eq_value("*", infix.tok.t_type)
+  test.eq_value("*", infix.operator)
+  var integer_literal = IntegerLiteral(infix.left)
+  test.eq_value("INT", integer_literal.tok.t_type)
+  test.eq_value(2, integer_literal.number) 
+  integer_literal = IntegerLiteral(infix.right)
+  test.eq_value("INT", integer_literal.tok.t_type)
+  test.eq_value(3, integer_literal.number)
+
+  # x + y
+  arg = arguments[][2]
+  infix = ast.InfixExpression(arg)
+  test.eq_value("+", infix.tok.t_type)
+  test.eq_value("+", infix.operator)
+  var ident = Identifier(infix.left)
+  test.eq_value("IDENT", ident.tok.t_type)
+  test.eq_value("x", ident.variable_name) 
+  ident = Identifier(infix.right)
+  test.eq_value("IDENT", ident.tok.t_type)
+  test.eq_value("y", ident.variable_name)

@@ -161,7 +161,7 @@ proc nextToken*(lex: Lexer): token.Token =
       # this case of some string token
       # example, if, func, hoge...
       let ident = lex.readIdentifiter()
-      return newMultiliteralToken(token.LookupIdent(ident), ident)
+      return newMultiliteralToken(token.lookupIdent(ident), ident)
     elif isDigit(lex.ch):
       return newMultiliteralToken(token.INT, lex.readNumber)
     else:

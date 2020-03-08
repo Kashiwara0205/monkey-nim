@@ -65,7 +65,7 @@ var keywords = {
   "return": RETURN
 }.newTable
 
-proc LookupIdent*(ident: string): TokenType =
+proc lookupIdent*(ident: string): TokenType =
   if keywords.hasKey(ident):
     return keywords[ident]
   else:

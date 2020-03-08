@@ -1,5 +1,7 @@
 import ../token/token
 import ../utils/utils
+import tables
+import hashes
 
 # Interface
 type 
@@ -310,3 +312,23 @@ proc getValue*(expression: IndexExpression): string =
   str &= "]"
 
   return str
+
+# This type used by following program 
+# [ {"key": value} ]
+type HashLiteral* = ref object of Expression
+  tok*: token.Token
+  pairs: Table[ast.Expression, ast.Expression]
+
+proc getTokenLiteral*(literal: HashLiteral): string = 
+  return literal.tok.literal
+
+proc getValue*(literal: HashLiteral): string =
+  var pairs: seq[string]
+
+  for key, val in literal.pairs:
+    let pair = key.getValue() & ":" & val.getValue()
+    pairs.add(pair)
+  
+  var pairs_str = "{" & utils.cnvSeqStrToStr(pairs) & "}"
+  
+  return pairs_str

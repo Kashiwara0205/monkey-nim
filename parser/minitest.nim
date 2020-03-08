@@ -567,3 +567,105 @@ block call_expression_test:
   ident = Identifier(infix.right)
   test.eq_value("IDENT", ident.tok.t_type)
   test.eq_value("y", ident.variable_name)
+
+# outline: whther be able to parse array literal test
+# expected_value: expected array literal test
+block array_literal_test:
+  # [1, 2 * 2, x + y]
+  var program = test.get_program("[1, 2 * 2, x + y]")
+  test.eq_value(1, program.statements.len)
+  var expression = ast.ExpressionStatement(program.statements[0])
+  var array_literal = ast.ArrayLiteral(expression.expression)
+  eq_value("[", array_literal.tok.t_type)
+  var expressions = array_literal.elements
+  test.eq_value(3, expressions[].len)
+
+  # 1
+  var integer_literal = ast.IntegerLiteral(expressions[][0])
+  eq_value("INT", integer_literal.tok.t_type)
+  eq_value(1, integer_literal.number)
+
+  # 2 * 2
+  var infix = ast.InfixExpression(expressions[][1])
+  test.eq_value("*", infix.tok.t_type)
+  test.eq_value("*", infix.operator)
+  integer_literal = IntegerLiteral(infix.right)
+  test.eq_value("INT", integer_literal.tok.t_type)
+  test.eq_value(2, integer_literal.number)
+  integer_literal = IntegerLiteral(infix.left)
+  test.eq_value("INT", integer_literal.tok.t_type)
+  test.eq_value(2, integer_literal.number)
+
+  # x + y
+  infix = ast.InfixExpression(expressions[][2])
+  test.eq_value("+", infix.tok.t_type)
+  test.eq_value("+", infix.operator)
+  var ident = Identifier(infix.right)
+  test.eq_value("IDENT", ident.tok.t_type)
+  test.eq_value("y", ident.variable_name)
+  ident = Identifier(infix.left)
+  test.eq_value("IDENT", ident.tok.t_type)
+  test.eq_value("x", ident.variable_name)
+
+  # [10 * 2]
+  program = test.get_program("[10 * 2]")
+  test.eq_value(1, program.statements.len)
+  expression = ast.ExpressionStatement(program.statements[0])
+  array_literal = ast.ArrayLiteral(expression.expression)
+  eq_value("[", array_literal.tok.t_type)
+  expressions = array_literal.elements
+  test.eq_value(1, expressions[].len)
+
+  # 10 * 2
+  infix = ast.InfixExpression(expressions[][0])
+  test.eq_value("*", infix.tok.t_type)
+  test.eq_value("*", infix.operator)
+  integer_literal = IntegerLiteral(infix.right)
+  test.eq_value("INT", integer_literal.tok.t_type)
+  test.eq_value(2, integer_literal.number)
+  integer_literal = IntegerLiteral(infix.left)
+  test.eq_value("INT", integer_literal.tok.t_type)
+  test.eq_value(10, integer_literal.number)
+
+# outline: whther be able to parse index_expression test
+# expected_value: expected index_expression test
+block index_expression_test:
+  # arr[1]
+  var program = test.get_program("arr[1]")
+  test.eq_value(1, program.statements.len)
+  var expression = ast.ExpressionStatement(program.statements[0])
+  var index = ast.IndexExpression(expression.expression)
+  test.eq_value("[", index.tok.t_type)
+
+  # arr
+  var left = ast.Identifier(index.left)
+  test.eq_value("IDENT", left.tok.t_type)
+  test.eq_value("arr", left.variable_name)
+
+  # 1
+  var integer_literal = ast.IntegerLiteral(index.index)
+  test.eq_value("INT", integer_literal.tok.t_type)
+  test.eq_value(1, integer_literal.number)
+
+  # arr[x * y]
+  program = test.get_program("arr[x * y]")
+  test.eq_value(1, program.statements.len)
+  expression = ast.ExpressionStatement(program.statements[0])
+  index = ast.IndexExpression(expression.expression)
+  test.eq_value("[", index.tok.t_type)
+
+  # arr
+  left = ast.Identifier(index.left)
+  test.eq_value("IDENT", left.tok.t_type)
+  test.eq_value("arr", left.variable_name)
+
+  # x * y
+  var infix = ast.InfixExpression(index.index)
+  test.eq_value("*", infix.tok.t_type)
+  test.eq_value("*", infix.operator)
+  var identifier = Identifier(infix.right)
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("y", identifier.variable_name)
+  identifier = Identifier(infix.left)
+  test.eq_value("IDENT", identifier.tok.t_type)
+  test.eq_value("x", identifier.variable_name)

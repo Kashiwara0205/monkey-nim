@@ -362,6 +362,7 @@ proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[ast.Exp
     parser.nextToken()
     return list
 
+  parser.nextToken()
   list[].add(parser.parseExpression(LOWSET))
 
   while parser.peekTokenIs(token.COMMA):

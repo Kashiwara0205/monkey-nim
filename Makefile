@@ -10,6 +10,7 @@ all:
 	nim compile test_utils/test_utils.nim
 	./token/minitest
 	./lexer/minitest
+	./parser/minitest
 
 compile: 
 	nim compile --run token/token.nim

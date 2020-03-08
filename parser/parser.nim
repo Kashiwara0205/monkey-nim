@@ -422,3 +422,24 @@ proc parseIndexExpression*(parser: Parser, left: ast.Expression): ast.Expression
     return nil
 
   return expression
+
+proc parseHashLiteral*(parser: Parser): ast.Expression =
+  var hash = ast.HashLiteral(tok: parser.curToken)
+
+  while not parser.peekTokenIs(token.RBRACE):
+    parser.nextToken()
+    let key: Expression = parser.parseExpression(LOWSET)
+
+    if not parser.expectPeekTokenIs(token.COLON):
+      return nil
+
+    parser.nextToken()
+    let value: Expression =  parser.parseExpression(LOWSET)
+    hash.pairs[key] = value
+    if not parser.peekTokenIs(token.RBRACE) and not parser.expectPeekTokenIs(token.COMMA):
+      return nil
+
+  if not parser.expectPeekTokenIs(token.RBRACE):
+    return nil
+
+  return hash

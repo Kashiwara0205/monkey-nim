@@ -19,6 +19,11 @@ type Statement* = ref object of Node
 type Expression* = ref object of Node
   node: Node
 
+proc hash*(expression: Expression): Hash =
+  var h: Hash = 0
+  h = h !& hash(expression)
+  result = !$h
+    
 # This type controll variable
 type Identifier* = ref object of Expression
   tok*: token.Token
@@ -317,7 +322,7 @@ proc getValue*(expression: IndexExpression): string =
 # [ {"key": value} ]
 type HashLiteral* = ref object of Expression
   tok*: token.Token
-  pairs: Table[ast.Expression, ast.Expression]
+  pairs*: Table[ast.Expression, ast.Expression]
 
 proc getTokenLiteral*(literal: HashLiteral): string = 
   return literal.tok.literal

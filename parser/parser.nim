@@ -69,6 +69,7 @@ proc parseCallArguments*(parser: Parser): ref seq[ast.Expression]
 proc parseStringLiteral*(parser: Parser): ast.Expression
 proc parseArrayLiteral*(parser: Parser): ast.Expression
 proc parseIndexExpression*(parser: Parser, left: ast.Expression): ast.Expression
+proc parseHashLiteral*(parser: Parser): ast.Expression
 
 proc getErrors*(parser: Parser): seq[string] =
   return parser.errors
@@ -122,6 +123,7 @@ proc newParser*(lex: lexer.Lexer): Parser =
   parser.prefixParseFns[token.FUNCTION] = parseFunctionLiteral
   parser.prefixParseFns[token.STRING] = parseStringLiteral
   parser.prefixParseFns[token.LBRACKET] = parseArrayLiteral
+  parser.prefixParseFns[token.LBRACE] = parseHashLiteral
 
   parser.infixParseFns[token.PLUS] = parseInfixExpression
   parser.infixParseFns[token.MINUS] = parseInfixExpression
@@ -428,14 +430,15 @@ proc parseHashLiteral*(parser: Parser): ast.Expression =
 
   while not parser.peekTokenIs(token.RBRACE):
     parser.nextToken()
-    let key: Expression = parser.parseExpression(LOWSET)
+    let key = parser.parseExpression(LOWSET)
+    let stringliteral = StringLiteral(key)
 
     if not parser.expectPeekTokenIs(token.COLON):
       return nil
 
     parser.nextToken()
     let value: Expression =  parser.parseExpression(LOWSET)
-    hash.pairs[key] = value
+    hash.pairs[stringliteral] = value
     if not parser.peekTokenIs(token.RBRACE) and not parser.expectPeekTokenIs(token.COMMA):
       return nil
 

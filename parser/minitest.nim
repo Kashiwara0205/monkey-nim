@@ -529,7 +529,7 @@ block call_expression_test:
   var expression = ast.ExpressionStatement(statement)
   var call_expression = ast.CallExpression(expression.expression)
 
-  # add  
+  # add
   var function =  ast.Identifier(call_expression.function)
   test.eq_value("IDENT", function.tok.t_type)
   test.eq_value("add", function.variable_name)
@@ -551,7 +551,7 @@ block call_expression_test:
   test.eq_value("*", infix.operator)
   var integer_literal = IntegerLiteral(infix.left)
   test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(2, integer_literal.number) 
+  test.eq_value(2, integer_literal.number)
   integer_literal = IntegerLiteral(infix.right)
   test.eq_value("INT", integer_literal.tok.t_type)
   test.eq_value(3, integer_literal.number)
@@ -563,7 +563,7 @@ block call_expression_test:
   test.eq_value("+", infix.operator)
   var ident = Identifier(infix.left)
   test.eq_value("IDENT", ident.tok.t_type)
-  test.eq_value("x", ident.variable_name) 
+  test.eq_value("x", ident.variable_name)
   ident = Identifier(infix.right)
   test.eq_value("IDENT", ident.tok.t_type)
   test.eq_value("y", ident.variable_name)
@@ -669,3 +669,13 @@ block index_expression_test:
   identifier = Identifier(infix.left)
   test.eq_value("IDENT", identifier.tok.t_type)
   test.eq_value("x", identifier.variable_name)
+
+# outline: whther be able to parse hash_literal test
+# expected_value: expected hash_literal test
+block hash_literal_test:
+  # arr[1]
+  var program = test.get_program("{\"a\": 1}")
+  test.eq_value(1, program.statements.len)
+
+  var expression = ast.ExpressionStatement(program.statements[0])
+  var hash = ast.HashLiteral(expression.expression)

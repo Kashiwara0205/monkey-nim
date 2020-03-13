@@ -4,7 +4,7 @@ import tables
 import hashes
 
 # Interface
-type 
+type
   Node* = ref object of RootObj
 proc getTokenLiteral*(node: Node): string =
   return ""
@@ -19,11 +19,6 @@ type Statement* = ref object of Node
 type Expression* = ref object of Node
   node: Node
 
-proc hash*(expression: Expression): Hash =
-  var h: Hash = 0
-  h = h !& hash(expression)
-  result = !$h
-    
 # This type controll variable
 type Identifier* = ref object of Expression
   tok*: token.Token
@@ -56,14 +51,14 @@ proc getToeknLiteral*(p: Program): string =
   else:
     return ""
 
-proc getValue*(p: Program): string = 
+proc getValue*(p: Program): string =
   var str = ""
   for elem in p.statements:
     str &= elem.getValue()
 
   return str
 
-# This type used by following program 
+# This type used by following program
 # [let a = 5;]
 type
   LetStatement* = ref object of Statement
@@ -88,7 +83,7 @@ proc getValue*(statement: LetStatement): string =
   str &= ";"
   return str
 
-# This type used by following program 
+# This type used by following program
 # [return value;]
 type ReturnStatement* = ref object of Statement
   tok*: token.Token
@@ -102,11 +97,11 @@ proc getValue*(statement: ReturnStatement): string =
 
   if statement.expression != nil:
     str &= statement.expression.getValue()
-  
+
   str &= ";"
   return str
 
-# This type used by following program 
+# This type used by following program
 # [value;]
 type ExpressionStatement* = ref object of Statement
   tok*: token.Token
@@ -121,7 +116,7 @@ proc getValue*(statement: ExpressionStatement): string =
 
   return ""
 
-# This type used by following program 
+# This type used by following program
 # [5;]
 type IntegerLiteral* = ref object of Expression
   tok*: token.Token
@@ -133,7 +128,7 @@ proc getTokenLiteral*(literal: IntegerLiteral): string =
 proc getValue*(literal: IntegerLiteral): string =
   return literal.tok.literal
 
-# This type used by following program 
+# This type used by following program
 # [!] [ - ]
 type PrefixExpression* = ref object of Expression
   tok*: token.Token
@@ -143,7 +138,7 @@ type PrefixExpression* = ref object of Expression
 proc getTokenLiteral*(expression: PrefixExpression): string =
   return expression.tok.literal
 
-proc getValue*(expression: PrefixExpression): string = 
+proc getValue*(expression: PrefixExpression): string =
   var str = ""
   str &= "("
   str &= expression.operator
@@ -152,7 +147,7 @@ proc getValue*(expression: PrefixExpression): string =
 
   return str
 
-# This type used by following program 
+# This type used by following program
 # [1 + 1] [1 < 1]
 type InfixExpression* = ref object of Expression
   tok*: token.Token
@@ -163,7 +158,7 @@ type InfixExpression* = ref object of Expression
 proc getTokenLiteral*(expression: InfixExpression): string =
   return expression.tok.literal
 
-proc getValue*(expression: InfixExpression): string = 
+proc getValue*(expression: InfixExpression): string =
   var str = ""
   str &= "("
   str &= expression.left.getValue
@@ -173,7 +168,7 @@ proc getValue*(expression: InfixExpression): string =
 
   return str
 
-# This type used by following program 
+# This type used by following program
 # [{ }]
 type BlockStatement* = ref object of Statement
   tok*: token.Token
@@ -182,15 +177,15 @@ type BlockStatement* = ref object of Statement
 proc getTokenLiteral*(statement: BlockStatement): string =
   return statement.tok.literal
 
-proc getValue*(statement: BlockStatement): string = 
+proc getValue*(statement: BlockStatement): string =
   var str = ""
   for elem in statement.statements:
     str &= elem.getValue()
 
   return str
 
-# This type used by following program 
-# [ 
+# This type used by following program
+# [
 #  if(xxx){
 #    xxx
 #  }
@@ -204,7 +199,7 @@ type IfExpression* = ref object of Expression
 proc getTokenLiteral*(expression: IfExpression): string =
   return expression.tok.literal
 
-proc getValue*(expression: IfExpression): string = 
+proc getValue*(expression: IfExpression): string =
   var str = "if"
   str &= expression.condition.getValue()
   str &= " "
@@ -213,11 +208,11 @@ proc getValue*(expression: IfExpression): string =
   if expression.alternative != nil:
     str &= "else "
     str &= expression.alternative.getValue()
-  
+
   return str
 
-# This type used by following program 
-# [ 
+# This type used by following program
+# [
 #  fn(xxx){
 #    xxx
 #  }
@@ -230,7 +225,7 @@ type FunctionLiteral* = ref object of Expression
 proc getTokenLiteral*(literal: FunctionLiteral): string =
   return literal.tok.literal
 
-proc getValue*(literal: FunctionLiteral): string = 
+proc getValue*(literal: FunctionLiteral): string =
   var params: seq[string]
   for param in literal.parameters[]:
     params.add(param.getValue())
@@ -244,7 +239,7 @@ proc getValue*(literal: FunctionLiteral): string =
 
   return str
 
-# This type used by following program 
+# This type used by following program
 # call function
 # [ fn() ]
 type CallExpression* = ref object of Expression
@@ -255,7 +250,7 @@ type CallExpression* = ref object of Expression
 proc getTokenLiteral*(expression: CallExpression): string =
   return expression.tok.literal
 
-proc getValue*(expression: CallExpression): string = 
+proc getValue*(expression: CallExpression): string =
   var args: seq[string]
   for arg in expression.arguments[]:
     args.add(arg.getValue())
@@ -267,19 +262,24 @@ proc getValue*(expression: CallExpression): string =
 
   return str
 
-# This type used by following program 
+# This type used by following program
 # [ "abcde" ]
 type StringLiteral* = ref object of Expression
   tok*: token.Token
   value*: string
 
+proc hash*(literal: StringLiteral): Hash =
+  var h: Hash = 0
+  h = h !& hash(literal.value)
+  result = !$h
+
 proc getTokenLiteral*(literal: StringLiteral): string =
   return literal.tok.literal
 
-proc getValue*(literal: StringLiteral): string = 
+proc getValue*(literal: StringLiteral): string =
   return literal.tok.literal
 
-# This type used by following program 
+# This type used by following program
 # [ array[] ]
 type ArrayLiteral* = ref object of Expression
   tok*: token.Token
@@ -288,7 +288,7 @@ type ArrayLiteral* = ref object of Expression
 proc getTokenLiteral*(literal: ArrayLiteral): string =
   return literal.tok.literal
 
-proc getValue*(literal: ArrayLiteral): string = 
+proc getValue*(literal: ArrayLiteral): string =
   var elements: seq[string]
   for el in literal.elements[]:
     elements.add(el.getValue())
@@ -299,17 +299,17 @@ proc getValue*(literal: ArrayLiteral): string =
 
   return str
 
-# This type used by following program 
+# This type used by following program
 # [ [index] ]
-type IndexExpression* = ref object of Expression 
+type IndexExpression* = ref object of Expression
   tok*: token.Token
   left*: Expression
   index*: Expression
 
-proc getTokenLiteral*(expression: IndexExpression): string = 
+proc getTokenLiteral*(expression: IndexExpression): string =
   return expression.tok.literal
 
-proc getValue*(expression: IndexExpression): string = 
+proc getValue*(expression: IndexExpression): string =
   var str = "("
   str &= expression.left.getValue()
   str &= "["
@@ -318,13 +318,13 @@ proc getValue*(expression: IndexExpression): string =
 
   return str
 
-# This type used by following program 
+# This type used by following program
 # [ {"key": value} ]
 type HashLiteral* = ref object of Expression
   tok*: token.Token
-  pairs*: Table[ast.Expression, ast.Expression]
+  pairs*: Table[ast.StringLiteral, ast.Expression]
 
-proc getTokenLiteral*(literal: HashLiteral): string = 
+proc getTokenLiteral*(literal: HashLiteral): string =
   return literal.tok.literal
 
 proc getValue*(literal: HashLiteral): string =
@@ -333,7 +333,7 @@ proc getValue*(literal: HashLiteral): string =
   for key, val in literal.pairs:
     let pair = key.getValue() & ":" & val.getValue()
     pairs.add(pair)
-  
+
   var pairs_str = "{" & utils.cnvSeqStrToStr(pairs) & "}"
-  
+
   return pairs_str

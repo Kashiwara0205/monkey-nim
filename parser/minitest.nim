@@ -54,17 +54,17 @@ block return_test:
   test.eq_value(ast.nReturnStatement, statement.s_type)
   test.eq_value("return x;", statement.getValue)
 
-#[
+
 # outline: whther be able to parse identifier
 # expected_value: expected identifier
 block identifier_test:
   var program = test.get_program("x;")
   test.eq_value(1, program.statements.len)
   var statement = program.statements[0]
-  test.eq_value("IDENT", ast.ExpressionStatement(statement).tok.t_type)
-  var identifier = Identifier(ast.ExpressionStatement(statement).expression)
-  test.eq_value("IDENT", identifier.tok.t_type)
-  test.eq_value("x", identifier.variable_name)
+  test.eq_value("x", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("x", statement.getValue)
+
 
 # outline: whther be able to parse integer_literal
 # expected_value: expected integer_literal
@@ -72,10 +72,10 @@ block integer_literal_test:
   var program = test.get_program("5;")
   test.eq_value(1, program.statements.len)
   var statement = program.statements[0]
-  test.eq_value("INT", ast.ExpressionStatement(statement).tok.t_type)
-  var integer_literal = IntegerLiteral(ast.ExpressionStatement(statement).expression)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("5", statement.getValue)
+
 
 # outline: whther be able to parse string_literal
 # expected_value: expected string_literal
@@ -83,10 +83,10 @@ block string_literal_test:
   var program = test.get_program("\"kashiwara\"")
   test.eq_value(1, program.statements.len)
   var statement = program.statements[0]
-  test.eq_value("STRING", ast.ExpressionStatement(statement).tok.t_type)
-  var integer_literal = StringLiteral(ast.ExpressionStatement(statement).expression)
-  test.eq_value("STRING", integer_literal.tok.t_type)
-  test.eq_value("kashiwara", integer_literal.value)
+  test.eq_value("kashiwara", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("kashiwara", statement.getValue)
+  
 
 # outline: whther be able to parse boolean
 # expected_value: expected boolean
@@ -94,18 +94,16 @@ block boolean_test:
   var program = test.get_program("true;")
   test.eq_value(1, program.statements.len)
   var statement = program.statements[0]
-  var expression = ast.ExpressionStatement(statement)
-  var boolean = ast.Boolean(expression.expression)
-  test.eq_value("true", boolean.tok.t_type)
-  test.eq_value(true, boolean.value)
+  test.eq_value("true", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("true", statement.getValue)
 
   program = test.get_program("false;")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  boolean = ast.Boolean(expression.expression)
-  test.eq_value("false", boolean.tok.t_type)
-  test.eq_value(false, boolean.value)
+  test.eq_value("false", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("false", statement.getValue)
 
 # outline: whther be able to parse prefix_expression
 # expected_value: expected prefix_expression
@@ -113,42 +111,30 @@ block prefix_expression_test:
   var program = test.get_program("!5;")
   test.eq_value(1, program.statements.len)
   var statement = program.statements[0]
-  var prefix_expression = PrefixExpression(ast.ExpressionStatement(statement).expression)
-  test.eq_value("!", prefix_expression.tok.t_type)
-  test.eq_value("!", prefix_expression.operator)
-  var integer_literal = IntegerLiteral(prefix_expression.right)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
+  test.eq_value("!", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(!5)", statement.getValue)
 
   program = test.get_program("-15;")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  prefix_expression = PrefixExpression(ast.ExpressionStatement(statement).expression)
-  test.eq_value("-", prefix_expression.tok.t_type)
-  test.eq_value("-", prefix_expression.operator)
-  integer_literal = IntegerLiteral(prefix_expression.right)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(15, integer_literal.number)
+  test.eq_value("-", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(-15)", statement.getValue)
 
   program = test.get_program("!true")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  prefix_expression = PrefixExpression(ast.ExpressionStatement(statement).expression)
-  test.eq_value("!", prefix_expression.tok.t_type)
-  test.eq_value("!", prefix_expression.operator)
-  var boolean = Boolean(prefix_expression.right)
-  test.eq_value("true", boolean.tok.t_type)
-  test.eq_value(true, boolean.value)
+  test.eq_value("!", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(!true)", statement.getValue)
 
   program = test.get_program("!false")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  prefix_expression = PrefixExpression(ast.ExpressionStatement(statement).expression)
-  test.eq_value("!", prefix_expression.tok.t_type)
-  test.eq_value("!", prefix_expression.operator)
-  boolean = Boolean(prefix_expression.right)
-  test.eq_value("false", boolean.tok.t_type)
-  test.eq_value(false, boolean.value)
+  test.eq_value("!", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(!false)", statement.getValue)
 
 # outline: whther be able to parse infix_expression
 # expected_value: expected infix_expression
@@ -156,157 +142,80 @@ block infix_expression_test:
   var program = test.get_program("5 + 5;")
   test.eq_value(1, program.statements.len)
   var statement = program.statements[0]
-  var expression = ast.ExpressionStatement(statement)
-  var infix = ast.InfixExpression(expression.expression)
-  test.eq_value("+", infix.tok.t_type)
-  test.eq_value("+", infix.operator)
-  var integer_literal = IntegerLiteral(infix.right)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
-  integer_literal = IntegerLiteral(infix.left)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(5+5)", statement.getValue)
 
   program = test.get_program("5 - 5;")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  infix = ast.InfixExpression(expression.expression)
-  test.eq_value("-", infix.tok.t_type)
-  test.eq_value("-", infix.operator)
-  integer_literal = IntegerLiteral(infix.right)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
-  integer_literal = IntegerLiteral(infix.left)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(5-5)", statement.getValue)
 
   program = test.get_program("5 * 5;")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  infix = ast.InfixExpression(expression.expression)
-  test.eq_value("*", infix.tok.t_type)
-  test.eq_value("*", infix.operator)
-  integer_literal = IntegerLiteral(infix.right)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
-  integer_literal = IntegerLiteral(infix.left)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(5*5)", statement.getValue)
 
   program = test.get_program("5 / 5;")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  infix = ast.InfixExpression(expression.expression)
-  test.eq_value("/", infix.tok.t_type)
-  test.eq_value("/", infix.operator)
-  integer_literal = IntegerLiteral(infix.right)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
-  integer_literal = IntegerLiteral(infix.left)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(5/5)", statement.getValue)
 
   program = test.get_program("5 > 5;")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  infix = ast.InfixExpression(expression.expression)
-  test.eq_value(">", infix.tok.t_type)
-  test.eq_value(">", infix.operator)
-  integer_literal = IntegerLiteral(infix.right)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
-  integer_literal = IntegerLiteral(infix.left)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(5>5)", statement.getValue)
 
   program = test.get_program("5 < 5;")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  infix = ast.InfixExpression(expression.expression)
-  test.eq_value("<", infix.tok.t_type)
-  test.eq_value("<", infix.operator)
-  integer_literal = IntegerLiteral(infix.right)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
-  integer_literal = IntegerLiteral(infix.left)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
-
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(5<5)", statement.getValue)
+  
   program = test.get_program("5 == 5;")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  infix = ast.InfixExpression(expression.expression)
-  test.eq_value("==", infix.tok.t_type)
-  test.eq_value("==", infix.operator)
-  integer_literal = IntegerLiteral(infix.right)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
-  integer_literal = IntegerLiteral(infix.left)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(5==5)", statement.getValue)
 
   program = test.get_program("5 != 5;")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  infix = ast.InfixExpression(expression.expression)
-  test.eq_value("!=", infix.tok.t_type)
-  test.eq_value("!=", infix.operator)
-  integer_literal = IntegerLiteral(infix.right)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
-  integer_literal = IntegerLiteral(infix.left)
-  test.eq_value("INT", integer_literal.tok.t_type)
-  test.eq_value(5, integer_literal.number)
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(5!=5)", statement.getValue)
 
   program = test.get_program("true == true")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  infix = ast.InfixExpression(expression.expression)
-  test.eq_value("==", infix.tok.t_type)
-  test.eq_value("==", infix.operator)
-  var boolean = Boolean(infix.right)
-  test.eq_value("true", boolean.tok.t_type)
-  test.eq_value(true, boolean.value)
-  boolean = Boolean(infix.left)
-  test.eq_value("true", boolean.tok.t_type)
-  test.eq_value(true, boolean.value)
+  test.eq_value("true", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(true==true)", statement.getValue)
 
   program = test.get_program("true != false")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  infix = ast.InfixExpression(expression.expression)
-  test.eq_value("!=", infix.tok.t_type)
-  test.eq_value("!=", infix.operator)
-  boolean = Boolean(infix.right)
-  test.eq_value("false", boolean.tok.t_type)
-  test.eq_value(false, boolean.value)
-  boolean = Boolean(infix.left)
-  test.eq_value("true", boolean.tok.t_type)
-  test.eq_value(true, boolean.value)
+  test.eq_value("true", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(true!=false)", statement.getValue)
 
   program = test.get_program("false == false")
   test.eq_value(1, program.statements.len)
   statement = program.statements[0]
-  expression = ast.ExpressionStatement(statement)
-  infix = ast.InfixExpression(expression.expression)
-  test.eq_value("==", infix.tok.t_type)
-  test.eq_value("==", infix.operator)
-  boolean = Boolean(infix.right)
-  test.eq_value("false", boolean.tok.t_type)
-  test.eq_value(false, boolean.value)
-  boolean = Boolean(infix.left)
-  test.eq_value("false", boolean.tok.t_type)
-  test.eq_value(false, boolean.value)
-
+  test.eq_value("false", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(false==false)", statement.getValue)
+#[
 # outline: whther be able to parse if expression
 # expected_value: expected if expression
 block if_expression_test:

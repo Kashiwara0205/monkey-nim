@@ -8,12 +8,9 @@ block let_test:
 
   test.eq_value(1, program.statements.len)
   var statement = program.statements[0]
-  test.eq_value("LET", ast.LetStatement(statement).tok.t_type)
-  test.eq_value("IDENT", ast.LetStatement(statement).name.tok.t_type)
-  test.eq_value("x", ast.LetStatement(statement).name.variable_name)
-  var expression = IntegerLiteral(ast.LetStatement(statement).expression)
-  test.eq_value("INT", expression.tok.t_type)
-  test.eq_value(5, expression.number)
+  test.eq_value("let", statement.getTokenLiteral)
+  test.eq_value(ast.nLetStatement, statement.s_type)
+  test.eq_value("let x=5;", statement.getValue)
 
   program = test.get_program("""
     let a = 1;
@@ -22,21 +19,15 @@ block let_test:
 
   test.eq_value(2, program.statements.len)
   statement = program.statements[0]
-  test.eq_value("LET", ast.LetStatement(statement).tok.t_type)
-  test.eq_value("IDENT", ast.LetStatement(statement).name.tok.t_type)
-  test.eq_value("a", ast.LetStatement(statement).name.variable_name)
-  expression = IntegerLiteral(ast.LetStatement(statement).expression)
-  test.eq_value("INT", expression.tok.t_type)
-  test.eq_value(1, expression.number)
+  test.eq_value("let", statement.getTokenLiteral)
+  test.eq_value(ast.nLetStatement, statement.s_type)
+  test.eq_value("let a=1;", statement.getValue)
 
   statement = program.statements[1]
-  test.eq_value("LET", ast.LetStatement(statement).tok.t_type)
-  test.eq_value("IDENT", ast.LetStatement(statement).name.tok.t_type)
-  test.eq_value("b", ast.LetStatement(statement).name.variable_name)
-  expression = IntegerLiteral(ast.LetStatement(statement).expression)
-  test.eq_value("INT", expression.tok.t_type)
-  test.eq_value(5, expression.number)
-
+  test.eq_value("let", statement.getTokenLiteral)
+  test.eq_value(ast.nLetStatement, statement.s_type)
+  test.eq_value("let b=5;", statement.getValue)
+#[
 # outline: whther be able to parse return
 # expected_value: expected return statement
 block return_test:
@@ -679,3 +670,4 @@ block hash_literal_test:
 
   var expression = ast.ExpressionStatement(program.statements[0])
   var hash = ast.HashLiteral(expression.expression)
+]#

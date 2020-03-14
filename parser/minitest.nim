@@ -27,7 +27,7 @@ block let_test:
   test.eq_value("let", statement.getTokenLiteral)
   test.eq_value(ast.nLetStatement, statement.s_type)
   test.eq_value("let b=5;", statement.getValue)
-#[
+
 # outline: whther be able to parse return
 # expected_value: expected return statement
 block return_test:
@@ -35,28 +35,9 @@ block return_test:
 
   test.eq_value(1, program.statements.len)
   var statement = program.statements[0]
-  test.eq_value("return", ast.ReturnStatement(statement).tok.t_type)
-  var expression = IntegerLiteral(ast.ReturnStatement(statement).expression)
-  test.eq_value("INT", expression.tok.t_type)
-  test.eq_value(5, expression.number)
-
-  program = test.get_program("""
-    return 10;
-    return 15;
-  """)
-
-  test.eq_value(2, program.statements.len)
-  statement = program.statements[0]
-  test.eq_value("return", ast.ReturnStatement(statement).tok.t_type)
-  expression = IntegerLiteral(ast.ReturnStatement(statement).expression)
-  test.eq_value("INT", expression.tok.t_type)
-  test.eq_value(10, expression.number)
-
-  statement = program.statements[1]
-  test.eq_value("return", ast.ReturnStatement(statement).tok.t_type)
-  expression = IntegerLiteral(ast.ReturnStatement(statement).expression)
-  test.eq_value("INT", expression.tok.t_type)
-  test.eq_value(15, expression.number)
+  test.eq_value("return", statement.getTokenLiteral)
+  test.eq_value(ast.nReturnStatement, statement.s_type)
+  test.eq_value("return 5;", statement.getValue)
 
   program = test.get_program("""
     let x = 5;
@@ -65,19 +46,15 @@ block return_test:
 
   test.eq_value(2, program.statements.len)
   statement = program.statements[0]
-  test.eq_value("LET", ast.LetStatement(statement).tok.t_type)
-  test.eq_value("IDENT", ast.LetStatement(statement).name.tok.t_type)
-  test.eq_value("x", ast.LetStatement(statement).name.variable_name)
-  expression = IntegerLiteral(ast.LetStatement(statement).expression)
-  test.eq_value("INT", expression.tok.t_type)
-  test.eq_value(5, expression.number)
-
+  test.eq_value("let", statement.getTokenLiteral)
+  test.eq_value(ast.nLetStatement, statement.s_type)
+  test.eq_value("let x=5;", statement.getValue)
   statement = program.statements[1]
-  test.eq_value("return", ast.ReturnStatement(statement).tok.t_type)
-  var identifier = Identifier(ast.ReturnStatement(statement).expression)
-  test.eq_value("IDENT", identifier.tok.t_type)
-  test.eq_value("x", identifier.variable_name)
+  test.eq_value("return", statement.getTokenLiteral)
+  test.eq_value(ast.nReturnStatement, statement.s_type)
+  test.eq_value("return x;", statement.getValue)
 
+#[
 # outline: whther be able to parse identifier
 # expected_value: expected identifier
 block identifier_test:

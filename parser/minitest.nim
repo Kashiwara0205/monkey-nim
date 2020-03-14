@@ -54,7 +54,6 @@ block return_test:
   test.eq_value(ast.nReturnStatement, statement.s_type)
   test.eq_value("return x;", statement.getValue)
 
-
 # outline: whther be able to parse identifier
 # expected_value: expected identifier
 block identifier_test:
@@ -76,7 +75,6 @@ block integer_literal_test:
   test.eq_value(ast.nExpressionStatement, statement.s_type)
   test.eq_value("5", statement.getValue)
 
-
 # outline: whther be able to parse string_literal
 # expected_value: expected string_literal
 block string_literal_test:
@@ -87,7 +85,6 @@ block string_literal_test:
   test.eq_value(ast.nExpressionStatement, statement.s_type)
   test.eq_value("kashiwara", statement.getValue)
   
-
 # outline: whther be able to parse boolean
 # expected_value: expected boolean
 block boolean_test:
@@ -284,7 +281,7 @@ block call_expression_test:
   test.eq_value("add(1, (2*3), (x+y))", statement.getValue)
 
 # outline: whther be able to parse array literal test
-# expected_value: expected array literal test
+# expected_value: expected array literal
 block array_literal_test:
   # [1, 2 * 2, x + y]
   var program = test.get_program("[1, 2 * 2, x + y]")
@@ -303,7 +300,7 @@ block array_literal_test:
   test.eq_value("[(10*2)]", statement.getValue)
 #
 # outline: whther be able to parse index_expression test
-# expected_value: expected index_expression test
+# expected_value: expected index_expression
 block index_expression_test:
   # arr[1]
   var program = test.get_program("arr[1]")
@@ -320,7 +317,7 @@ block index_expression_test:
   test.eq_value("arr[(x*y)]", statement.getValue)
 
 # outline: whther be able to parse hash_literal test
-# expected_value: expected hash_literal test
+# expected_value: expected hash_literal
 block hash_literal_test:
   # {"a": 1}
   var program = test.get_program("{\"a\": 1}")
@@ -336,3 +333,192 @@ block hash_literal_test:
   test.eq_value(ast.nExpressionStatement, statement.s_type)
   # not warranty oeder about hash table
   test.eq_value("{b:2, c:3, a:1}", statement.getValue)
+
+# outline: whther be able to parse operator precedence
+# expected_value: expected operator precedence
+block opreator_precedence_test:
+  var program = test.get_program("-a * b")
+  test.eq_value(1, program.statements.len)
+  var statement = program.statements[0]
+  test.eq_value("-", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((-a)*b)", statement.getValue)
+
+  program = test.get_program("!-a")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("!", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(!(-a))", statement.getValue)
+
+  program = test.get_program("!-a")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("!", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(!(-a))", statement.getValue)
+
+  program = test.get_program("a + b + c")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("a", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((a+b)+c)", statement.getValue)
+
+  program = test.get_program("a * b * c")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("a", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((a*b)*c)", statement.getValue)
+
+  program = test.get_program("a * b / c")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("a", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((a*b)/c)", statement.getValue)
+
+  program = test.get_program("a + b / c")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("a", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(a+(b/c))", statement.getValue)
+
+  program = test.get_program("a + b * c + d / e - f")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("a", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(((a+(b*c))+(d/e))-f)", statement.getValue)
+
+  program = test.get_program("3 + 4; -5 * 5")
+  test.eq_value(2, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("3", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(3+4)", statement.getValue)
+  statement = program.statements[1]
+  test.eq_value("-", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((-5)*5)", statement.getValue)
+
+  program = test.get_program("5 > 4 == 3 < 4")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((5>4)==(3<4))", statement.getValue)
+
+  program = test.get_program("5 < 4 != 3 > 4")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("5", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((5<4)!=(3>4))", statement.getValue)
+
+  program = test.get_program("3 + 4 * 5 == 3 * 1 + 4 * 5")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("3", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((3+(4*5))==((3*1)+(4*5)))", statement.getValue)
+
+  program = test.get_program("true")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("true", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("true", statement.getValue)
+
+  program = test.get_program("false")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("false", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("false", statement.getValue)
+
+  program = test.get_program("3 > 5 == false")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("3", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((3>5)==false)", statement.getValue)
+
+  program = test.get_program("3 < 5 == true")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("3", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((3<5)==true)", statement.getValue)
+
+  program = test.get_program("1 + (2 + 3) + 4")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("1", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((1+(2+3))+4)", statement.getValue)
+
+  program = test.get_program("(5 + 5) * 2")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("(", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((5+5)*2)", statement.getValue)
+
+  program = test.get_program("2 / (5 + 5)")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("2", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(2/(5+5))", statement.getValue)
+
+  program = test.get_program("-(5 + 5)")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("-", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(-(5+5))", statement.getValue)
+
+  program = test.get_program("!(true == true)")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("!", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("(!(true==true))", statement.getValue)
+
+  program = test.get_program("a + add(b * c) + d")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("a", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((a+add((b*c)))+d)", statement.getValue)
+
+  program = test.get_program("add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("add", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("add(a, b, 1, (2*3), (4+5), add(6, (7*8)))", statement.getValue)
+
+  program = test.get_program("add(a + b + c * d / f + g)")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("add", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("add((((a+b)+((c*d)/f))+g))", statement.getValue)
+
+  program = test.get_program("a * [1, 2, 3, 4][b * c]* d")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("a", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("((a*[1, 2, 3, 4][(b*c)])*d)", statement.getValue)
+
+  program = test.get_program("add(a * b[2], b[1], 2 * [1, 2][1])")
+  test.eq_value(1, program.statements.len)
+  statement = program.statements[0]
+  test.eq_value("add", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("add((a*b[2]), b[1], (2*[1, 2][1]))", statement.getValue)

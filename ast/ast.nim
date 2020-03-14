@@ -34,9 +34,9 @@ type
   Node* = ref object of RootObj
     case n_type*: NodeType
     of nExpression:
-      expression: Expression
+      expression*: Expression
     of nStatement:
-      statement: Statement
+      statement*: Statement
 
   Expression* = ref object of Node
     case e_type*: ExpressionType
@@ -152,7 +152,7 @@ type
     tok*: token.Token
     pairs*: Table[ast.Expression, ast.Expression]
 
-  Statement* = ref object of Node
+  Statement* = ref object of RootObj
     case s_type*: StatementType
     of sLetStatement: 
     letStmt* : LetStatement
@@ -165,30 +165,33 @@ type
 
   # This type used by following program
   # [let a = 5;]
-  LetStatement* = ref object
+  LetStatement* = ref object of Statement
     tok*: token.Token
     name*: Identifier
     expression*: Expression
 
   # This type used by following program
   # [{ }]
-  BlockStatement* = ref object
+  BlockStatement* = ref object of Statement
     tok*: token.Token
     statements* :seq[Statement]
 
   # This type used by following program
   # [value;]
-  ExpressionStatement* = ref object
+  ExpressionStatement* = ref object of Statement
     tok*: token.Token
     expression*: Expression
 
   # This type used by following program
   # [return value;]
-  ReturnStatement* = ref object
+  ReturnStatement* = ref object of Statement
     tok*: token.Token
     expression*: Expression
 
 # forward declaration
+proc getTokenLiteral*(node: Node): string
+proc getValue*(node: Node) :string
+
 proc getTokenLiteral*(expression: Expression): string
 proc getValue*(expression: Expression) :string
 
@@ -249,16 +252,16 @@ proc getValue*(statement: BlockStatement): string
 proc getTokenLiteral*(node: Node):string =
   case node.n_type:
   of nExpression:
-    return node.expression.getTokenLiteral
+    return node.expression.getTokenLiteral()
   of nStatement:
-    return node.statement.getTokenLiteral
+    return node.statement.getTokenLiteral()
 
 proc getValue*(node: Node):string =
   case node.n_type:
     of nExpression:
-      return node.expression.getValue
+      return node.expression.getValue()
     of nStatement:
-      return node.statement.getValue
+      return node.statement.getValue()
 
 #----------------------------------------
 # Expression proc
@@ -581,7 +584,7 @@ proc getValue*(statement: BlockStatement): string =
 
 type
   Program* = ref object
-    statements* :seq[Statement]
+    statements* :seq[Node]
 
 proc getToeknLiteral*(p: Program): string =
   if p.statements.len() > 0:

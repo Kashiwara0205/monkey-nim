@@ -34,8 +34,8 @@ type Parser = ref object
   curToken: token.Token
   peekToken: token.Token
   errors: seq[string]
-  prefixParseFns: Table[token.TokenType, proc(parser: Parser): ast.Expression]
-  infixParseFns: Table[token.TokenType, proc(parser: Parser, left: ast.Expression): ast.Expression]
+  prefixParseFns: Table[token.TokenType, proc(parser: Parser): Node]
+  infixParseFns: Table[token.TokenType, proc(parser: Parser, left: Expression): Node]
 
 # forward declaration
 proc getErrors*(parser: Parser): seq[string]
@@ -47,29 +47,30 @@ proc peekTokenIs*(parser: Parser, t_type: token.TokenType): bool
 proc expectPeekTokenIs*(parser: Parser, t_type: token.TokenType): bool
 proc peekPrecedence*(parser: Parser): Priority
 proc curPrecedence*(parser: Parser): Priority
-proc parseProgram*(parser: Parser): ast.Program
-proc parseIdentifier*(parser: Parser): ast.Expression
-proc parseIntegerLiteral*(parser: Parser): ast.Expression
-proc parseExpression*(parser: Parser, precedence: Priority): ast.Expression
-proc parssLetStatement*(parser: Parser): ast.Statement
-proc parseReturnStatement*(parser: Parser): ast.Statement
-proc parseExpressionStatement*(parser: Parser): ast.Statement
-proc parseStatement*(parser: Parser): ast.Statement
-proc parseBlockStatement*(parser: Parser): ast.Statement
-proc parsePrefixExpression*(parser: Parser): ast.Expression
-proc parseInfixExpression*(parser: Parser, left: ast.Expression): ast.Expression
-proc parseBoolean*(parser: Parser): ast.Expression
-proc parseGroupExpression*(parser: Parser): ast.Expression
-proc parseIfExpression*(parser: Parser): ast.Expression
-proc parseFunctionParameters*(parser: Parser): ref seq[ast.Identifier]
-proc parseFunctionLiteral*(parser: Parser): ast.Expression
-proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[ast.Expression]
-proc parseCallExpression*(parser: Parser, function: ast.Expression): ast.Expression
-proc parseCallArguments*(parser: Parser): ref seq[ast.Expression]
-proc parseStringLiteral*(parser: Parser): ast.Expression
-proc parseArrayLiteral*(parser: Parser): ast.Expression
-proc parseIndexExpression*(parser: Parser, left: ast.Expression): ast.Expression
-proc parseHashLiteral*(parser: Parser): ast.Expression
+proc parseProgram*(parser: Parser): Program
+proc parseIdentifier*(parser: Parser): Node
+proc parseIntegerLiteral*(parser: Parser): Node
+proc parseExpression*(parser: Parser, precedence: Priority): Node
+proc parssLetStatement*(parser: Parser): Node
+proc parseReturnStatement*(parser: Parser): Node
+proc parseExpressionStatement*(parser: Parser): Node
+proc parseStatement*(parser: Parser): Node
+proc parseBlockStatement*(parser: Parser): Node
+proc parsePrefixExpression*(parser: Parser): Node
+
+proc parseInfixExpression*(parser: Parser, left: Expression): Node
+proc parseBoolean*(parser: Parser): Node
+proc parseGroupExpression*(parser: Parser): Node
+proc parseIfExpression*(parser: Parser): Node
+proc parseFunctionParameters*(parser: Parser): ref seq[Identifier]
+proc parseFunctionLiteral*(parser: Parser): Node
+proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[Expression]
+proc parseCallExpression*(parser: Parser, function: Expression): Node
+proc parseCallArguments*(parser: Parser): ref seq[Expression]
+proc parseStringLiteral*(parser: Parser): Node
+proc parseArrayLiteral*(parser: Parser): Node
+proc parseIndexExpression*(parser: Parser, left: Expression): Node
+proc parseHashLiteral*(parser: Parser): Node
 
 proc getErrors*(parser: Parser): seq[string] =
   return parser.errors
@@ -141,8 +142,8 @@ proc newParser*(lex: lexer.Lexer): Parser =
 
   return parser
 
-proc parseProgram*(parser: Parser): ast.Program =
-  var prgoram = ast.Program()
+proc parseProgram*(parser: Parser): Program =
+  var prgoram = Program()
 
   prgoram.statements = @[]
 
@@ -156,12 +157,12 @@ proc parseProgram*(parser: Parser): ast.Program =
 
   return prgoram
 
-proc parseIdentifier*(parser: Parser): ast.Expression =
-  let identifier = ast.Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
-  return ast.Expression(e_type: eIdentifier, identifier: identifier)
+proc parseIdentifier*(parser: Parser): Node =
+  let identifier = Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
+  return Node(n_type: nExpression, expression: Expression(e_type: eIdentifier, identifier: identifier))
 
-proc parseIntegerLiteral*(parser: Parser): ast.Expression =
-  var literal = ast.IntegerLiteral(tok: parser.curToken)
+proc parseIntegerLiteral*(parser: Parser): Node =
+  var literal = IntegerLiteral(tok: parser.curToken)
   var value: int64
 
   if utils.isStrDigit(parser.curToken.literal):
@@ -172,15 +173,15 @@ proc parseIntegerLiteral*(parser: Parser): ast.Expression =
 
   literal.number = value
 
-  return ast.Expression(e_type: eIntegerLiteral, integerLit: literal)
+  return Node(n_type: nExpression, expression: Expression(e_type: eIntegerLiteral, integerLit: literal))
 
-proc parseExpression*(parser: Parser, precedence: Priority): ast.Expression =
+proc parseExpression*(parser: Parser, precedence: Priority): Node =
   var prefix = parser.prefixParseFns[parser.curToken.t_type]
   if prefix == nil:
     parser.noPrefixPraseError(parser.curToken.t_type)
     return nil
 
-  var leftExp = prefix(parser)
+  var leftExp = prefix(parser).expression
 
   while not parser.peekTokenIs(token.SEMICOLON) and precedence < parser.peekPrecedence():
     var infix = parser.infixParseFns[parser.peekToken.t_type]
@@ -188,48 +189,48 @@ proc parseExpression*(parser: Parser, precedence: Priority): ast.Expression =
       return leftExp
 
     parser.nextToken()
-    leftExp = infix(parser, leftExp)
+    leftExp = infix(parser, leftExp).expression
 
-  return leftExp
+  return  Node(n_type: nExpression, expression: leftExp)
 
-proc parssLetStatement*(parser: Parser): ast.Statement =
-  var statement = ast.LetStatement(tok: parser.curToken)
+proc parssLetStatement*(parser: Parser): Node =
+  var statement = LetStatement(tok: parser.curToken)
 
   if not parser.expectPeekTokenIs(token.IDENT):
     return nil
 
-  statement.name = ast.Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
+  statement.name = Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
 
   if not parser.expectPeekTokenIs(token.ASSIGN):
     return nil
 
   parser.nextToken()
-  statement.expression = parser.parseExpression(LOWSET)
+  statement.expression = parser.parseExpression(LOWSET).expression
 
   if parser.peekTokenIs(token.SEMICOLON):
     parser.nextToken()
 
-  return ast.Statement(s_type: sLetStatement, letStmt: statement)
+  return Node(n_type: nStatement, statement: Statement(s_type: sLetStatement, letStmt: statement) )
 
-proc parseReturnStatement*(parser: Parser): ast.Statement =
-  var statement = ast.ReturnStatement(tok: parser.curToken)
+proc parseReturnStatement*(parser: Parser): Node =
+  var statement = ReturnStatement(tok: parser.curToken)
 
   parser.nextToken()
-  statement.expression = parser.parseExpression(LOWSET)
+  statement.expression = parser.parseExpression(LOWSET).expression
   while not parser.curTokenIs(token.SEMICOLON):
     parser.nextToken()
 
-  return ast.Statement(s_type: sReturnStatement, returnStmt: statement)
+  return Node(n_type: nStatement, statement: Statement(s_type: sReturnStatement, returnStmt: statement) )
 
-proc parseExpressionStatement*(parser: Parser): ast.Statement =
-  var statement = ast.ExpressionStatement(tok: parser.curToken)
-  statement.expression = parser.parseExpression(LOWSET)
+proc parseExpressionStatement*(parser: Parser): Node =
+  var statement = ExpressionStatement(tok: parser.curToken)
+  statement.expression = parser.parseExpression(LOWSET).expression
   if parser.peekTokenIs(token.SEMICOLON):
     parser.nextToken()
 
-  return ast.Statement(s_type: sExpressionStatement, expressionStmt: statement)
+  return Node(n_type: nStatement, statement: Statement(s_type: sExpressionStatement, expressionStmt: statement) )
 
-proc parseStatement*(parser: Parser): ast.Statement =
+proc parseStatement*(parser: Parser): Node =
   case parser.curToken.t_type:
   of token.LET:
     return parser.parssLetStatement()
@@ -238,42 +239,42 @@ proc parseStatement*(parser: Parser): ast.Statement =
   else:
     return parser.parseExpressionStatement()
 
-proc parseBlockStatement*(parser: Parser): ast.Statement =
-  var block_statement = ast.BlockStatement(tok: parser.curToken)
+proc parseBlockStatement*(parser: Parser): Node =
+  var block_statement = BlockStatement(tok: parser.curToken)
   block_statement.statements = @[]
 
   parser.nextToken()
 
   while not parser.curTokenIs(token.RBRACE) and not parser.curTokenIs(token.EOF):
-    var statement = parser.parseStatement()
-    if statement != nil:
-      block_statement.statements.add(statement)
+    var node = parser.parseStatement()
+    if node != nil:
+      block_statement.statements.add(node.statement)
 
     parser.nextToken()
 
-  return ast.Statement(s_type: sBlockStatement, blockStmt: block_statement)
+  return Node(n_type: nStatement, statement: Statement(s_type: sBlockStatement, blockStmt: block_statement) )
 
-proc parsePrefixExpression*(parser: Parser): ast.Expression =
-  var expression = ast.PrefixExpression(tok: parser.curToken, operator: parser.curToken.literal)
+proc parsePrefixExpression*(parser: Parser): Node =
+  var expression = PrefixExpression(tok: parser.curToken, operator: parser.curToken.literal)
   parser.nextToken()
-  expression.right = parser.parseExpression(PREFIX)
+  expression.right = parser.parseExpression(PREFIX).expression
 
-  return ast.Expression(e_type: ePrefixExpression, prefixExp: expression)
+  return Node(n_type: nExpression, expression: Expression(e_type: ePrefixExpression, prefixExp: expression) )
 
-proc parseInfixExpression*(parser: Parser, left: ast.Expression): ast.Expression =
-  var expression = ast.InfixExpression(tok: parser.curToken, operator: parser.curToken.literal, left: left)
+proc parseInfixExpression*(parser: Parser, left: Expression): Node =
+  var expression = InfixExpression(tok: parser.curToken, operator: parser.curToken.literal, left: left)
   var precedence = parser.curPrecedence()
 
   parser.nextToken()
-  expression.right = parser.parseExpression(precedence)
+  expression.right = parser.parseExpression(precedence).expression
 
-  return ast.Expression(e_type: eInfixExpression, infixExp: expression)
+  return Node(n_type: nExpression, expression: Expression(e_type: eInfixExpression, infixExp: expression) )
 
-proc parseBoolean*(parser: Parser): ast.Expression =
-  var boolean = ast.Boolean(tok: parser.curToken, value: parser.curTokenIs(token.TRUE))
-  return ast.Expression(e_type: eBoolean, boolean: boolean)
+proc parseBoolean*(parser: Parser): Node =
+  var boolean = Boolean(tok: parser.curToken, value: parser.curTokenIs(token.TRUE))
+  return Node(n_type: nExpression, expression: Expression(e_type: eBoolean, boolean: boolean) )
 
-proc parseGroupExpression*(parser: Parser): ast.Expression =
+proc parseGroupExpression*(parser: Parser): Node =
   parser.nextToken()
   let expression = parser.parseExpression(LOWSET)
   if not parser.expectPeekTokenIs(token.RPAREN):
@@ -281,15 +282,15 @@ proc parseGroupExpression*(parser: Parser): ast.Expression =
 
   return expression
 
-proc parseIfExpression*(parser: Parser): ast.Expression =
-  var expression = ast.IfExpression(tok: parser.curToken)
+proc parseIfExpression*(parser: Parser): Node =
+  var expression = IfExpression(tok: parser.curToken)
 
   if not parser.expectPeekTokenIs(token.LPAREN):
     return nil
 
   parser.nextToken()
 
-  expression.condition = parser.parseExpression(LOWSET)
+  expression.condition = parser.parseExpression(LOWSET).expression
 
   if not parser.expectPeekTokenIs(token.RPAREN):
     return nil
@@ -297,7 +298,7 @@ proc parseIfExpression*(parser: Parser): ast.Expression =
   if not parser.expectPeekTokenIs(token.LBRACE):
     return nil
 
-  expression.consequence = parser.parseBlockStatement().blockStmt
+  expression.consequence = parser.parseBlockStatement().statement.blockStmt
 
   if parser.peekTokenIs(token.ELSE):
     parser.nextToken()
@@ -305,12 +306,12 @@ proc parseIfExpression*(parser: Parser): ast.Expression =
     if not parser.expectPeekTokenIs(token.LBRACE):
       return nil
 
-    expression.alternative = parser.parseBlockStatement().blockStmt
+    expression.alternative = parser.parseBlockStatement().statement.blockStmt
 
-  return ast.Expression(e_type: eIfExpression, ifExp: expression)
+  return Node(n_type: nExpression, expression: Expression(e_type: eIfExpression, ifExp: expression))
 
-proc parseFunctionParameters*(parser: Parser): ref seq[ast.Identifier] =
-  var identifiers:ref seq[ast.Identifier]
+proc parseFunctionParameters*(parser: Parser): ref seq[Identifier] =
+  var identifiers:ref seq[Identifier]
   identifiers.new
   identifiers[] = @[]
 
@@ -321,7 +322,7 @@ proc parseFunctionParameters*(parser: Parser): ref seq[ast.Identifier] =
 
   parser.nextToken()
 
-  var ident = ast.Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
+  var ident = Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
   identifiers[].add(ident)
 
   while parser.peekTokenIs(token.COMMA):
@@ -332,7 +333,7 @@ proc parseFunctionParameters*(parser: Parser): ref seq[ast.Identifier] =
     # x , [y]
     parser.nextToken()
 
-    var ident = ast.Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
+    var ident = Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
     identifiers[].add(ident)
 
   if not parser.expectPeekTokenIs(token.RPAREN):
@@ -340,8 +341,8 @@ proc parseFunctionParameters*(parser: Parser): ref seq[ast.Identifier] =
 
   return identifiers
 
-proc parseFunctionLiteral*(parser: Parser): ast.Expression =
-  var literal = ast.FunctionLiteral(tok: parser.curToken)
+proc parseFunctionLiteral*(parser: Parser): Node =
+  var literal = FunctionLiteral(tok: parser.curToken)
 
   if not parser.expectPeekTokenIs(token.LPAREN):
     return nil
@@ -351,12 +352,12 @@ proc parseFunctionLiteral*(parser: Parser): ast.Expression =
   if not parser.expectPeekTokenIs(token.LBRACE):
     return nil
 
-  literal.body = parser.parseBlockStatement().blockStmt
+  literal.body = parser.parseBlockStatement().statement.blockStmt
 
-  return ast.Expression(e_type: eFunctionLiteral, functionLit: literal)
+  return Node(n_type: nExpression, expression: Expression(e_type: eFunctionLiteral, functionLit: literal))
 
-proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[ast.Expression] =
-  var list: ref seq[ast.Expression]
+proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[Expression] =
+  var list: ref seq[Expression]
   list.new
   list[] = @[]
 
@@ -365,26 +366,26 @@ proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[ast.Exp
     return list
 
   parser.nextToken()
-  list[].add(parser.parseExpression(LOWSET))
+  list[].add(parser.parseExpression(LOWSET).expression)
 
   while parser.peekTokenIs(token.COMMA):
     parser.nextToken()
     parser.nextToken()
-    list[].add(parser.parseExpression(LOWSET))
+    list[].add(parser.parseExpression(LOWSET).expression)
 
   if not parser.expectPeekTokenIs(tok):
     return nil
 
   return list
 
-proc parseCallExpression*(parser: Parser, function: ast.Expression): ast.Expression =
-  var expression = ast.CallExpression(tok: parser.curToken, function: function)
+proc parseCallExpression*(parser: Parser, function: Expression): Node =
+  var expression = CallExpression(tok: parser.curToken, function: function)
   expression.arguments = parser.parseCallArguments()
 
-  return ast.Expression(e_type: eCallExpression, callExp: expression)
+  return Node(n_type: nExpression, expression: Expression(e_type: eCallExpression, callExp: expression) )
 
-proc parseCallArguments*(parser: Parser): ref seq[ast.Expression] =
-  var args: ref seq[ast.Expression]
+proc parseCallArguments*(parser: Parser): ref seq[Expression] =
+  var args: ref seq[Expression]
   args.new
   args[] = @[]
 
@@ -393,52 +394,52 @@ proc parseCallArguments*(parser: Parser): ref seq[ast.Expression] =
     return args
 
   parser.nextToken()
-  args[].add(parser.parseExpression(LOWSET))
+  args[].add(parser.parseExpression(LOWSET).expression)
 
   while parser.peekTokenIs(token.COMMA):
     parser.nextToken()
     parser.nextToken()
-    args[].add(parser.parseExpression(LOWSET))
+    args[].add(parser.parseExpression(LOWSET).expression)
 
   if not parser.expectPeekTokenIs(token.RPAREN):
     return nil
 
   return args
 
-proc parseStringLiteral*(parser: Parser): ast.Expression =
-  let string_literal = ast.StringLiteral(tok: parser.curToken, value: parser.curToken.literal)
-  return ast.Expression(e_type: eStringLiteral, stringLit: string_literal)
+proc parseStringLiteral*(parser: Parser): Node =
+  let string_literal = StringLiteral(tok: parser.curToken, value: parser.curToken.literal)
+  return Node(n_type: nExpression, expression: Expression(e_type: eStringLiteral, stringLit: string_literal) )
 
-proc parseArrayLiteral*(parser: Parser): ast.Expression =
-  var literal = ast.ArrayLiteral(tok: parser.curToken)
+proc parseArrayLiteral*(parser: Parser): Node =
+  var literal = ArrayLiteral(tok: parser.curToken)
   literal.elements = parser.parseExpressionList(token.RBRACKET)
 
-  return ast.Expression(e_type: eArrayLiteral, arrayLit: literal)
+  return Node(n_type: nExpression, expression: Expression(e_type: eArrayLiteral, arrayLit: literal) )
 
-proc parseIndexExpression*(parser: Parser, left: ast.Expression): ast.Expression =
-  var expression = ast.IndexExpression(tok: parser.curToken, left: left)
+proc parseIndexExpression*(parser: Parser, left: Expression): Node =
+  var expression = IndexExpression(tok: parser.curToken, left: left)
 
   parser.nextToken()
-  expression.index = parser.parseExpression(LOWSET)
+  expression.index = parser.parseExpression(LOWSET).expression
 
   if not parser.expectPeekTokenIs(token.RBRACKET):
     return nil
 
-  return ast.Expression(e_type: eIndexExpression, indexExp: expression)
+  return  Node(n_type: nExpression, expression: Expression(e_type: eIndexExpression, indexExp: expression) )
 
-proc parseHashLiteral*(parser: Parser): ast.Expression =
-  var hash = ast.HashLiteral(tok: parser.curToken)
+proc parseHashLiteral*(parser: Parser): Node =
+  var hash = HashLiteral(tok: parser.curToken)
 
   while not parser.peekTokenIs(token.RBRACE):
     parser.nextToken()
-    let key = parser.parseExpression(LOWSET)
+    let key = parser.parseExpression(LOWSET).expression
 
     if not parser.expectPeekTokenIs(token.COLON):
       return nil
 
     parser.nextToken()
 
-    let value =  parser.parseExpression(LOWSET)
+    let value =  parser.parseExpression(LOWSET).expression
     hash.pairs[key] = value
     if not parser.peekTokenIs(token.RBRACE) and not parser.expectPeekTokenIs(token.COMMA):
       return nil
@@ -446,4 +447,4 @@ proc parseHashLiteral*(parser: Parser): ast.Expression =
   if not parser.expectPeekTokenIs(token.RBRACE):
     return nil
 
-  return ast.Expression(e_type: eHashLiteral, hashLit: hash)
+  return Node(n_type: nExpression, expression: Expression(e_type: eHashLiteral, hashLit: hash) )

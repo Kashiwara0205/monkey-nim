@@ -310,23 +310,29 @@ block index_expression_test:
   var statement = program.statements[0]
   test.eq_value("arr", statement.getTokenLiteral)
   test.eq_value(ast.nExpressionStatement, statement.s_type)
-  test.eq_value("(arr[1])", statement.getValue)
+  test.eq_value("arr[1]", statement.getValue)
 
   # arr[x * y]
   program = test.get_program("arr[x * y]")
   statement = program.statements[0]
   test.eq_value("arr", statement.getTokenLiteral)
   test.eq_value(ast.nExpressionStatement, statement.s_type)
-  test.eq_value("(arr[(x*y)])", statement.getValue)
+  test.eq_value("arr[(x*y)]", statement.getValue)
 
-#[
 # outline: whther be able to parse hash_literal test
 # expected_value: expected hash_literal test
 block hash_literal_test:
-  # arr[1]
+  # {"a": 1}
   var program = test.get_program("{\"a\": 1}")
-  test.eq_value(1, program.statements.len)
+  var statement = program.statements[0]
+  test.eq_value("{", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  test.eq_value("{a:1}", statement.getValue)
 
-  var expression = ast.ExpressionStatement(program.statements[0])
-  var hash = ast.HashLiteral(expression.expression)
-]#
+  # {b:2, c:3, a:1}
+  program = test.get_program("{\"a\": 1, \"b\": 2, \"c\": 3}")
+  statement = program.statements[0]
+  test.eq_value("{", statement.getTokenLiteral)
+  test.eq_value(ast.nExpressionStatement, statement.s_type)
+  # not warranty oeder about hash table
+  test.eq_value("{b:2, c:3, a:1}", statement.getValue)

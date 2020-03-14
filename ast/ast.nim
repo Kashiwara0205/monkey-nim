@@ -140,7 +140,7 @@ type
   # [ {"key": value} ]
   HashLiteral* = ref object of Expression
     tok*: token.Token
-    pairs*: Table[ast.StringLiteral, ast.Expression]
+    pairs*: Table[ast.Expression, ast.Expression]
 
   Statement* = ref object of Node
     case s_type*: StatementType
@@ -290,6 +290,11 @@ proc getValue*(expression: Expression):string =
   of nHashLiteral:
     return expression.hashLit.getValue
 
+proc hash*(literal: Expression): Hash =
+  var h: Hash = 0
+  h = h !& hash(literal.getValue)
+  result = !$h
+
 #----------------------------------------
 # Statement proc
 #----------------------------------------
@@ -377,11 +382,6 @@ proc getValue*(expression: InfixExpression): string =
 #----------------------------------------
 # StringLiteral proc
 #----------------------------------------
-proc hash*(literal: StringLiteral): Hash =
-  var h: Hash = 0
-  h = h !& hash(literal.value)
-  result = !$h
-
 proc getTokenLiteral*(literal: StringLiteral): string =
   return literal.tok.literal
 
@@ -468,12 +468,10 @@ proc getTokenLiteral*(expression: IndexExpression): string =
   return expression.tok.literal
 
 proc getValue*(expression: IndexExpression): string =
-  var str = "("
-  str &= expression.left.getValue()
+  var str = expression.left.getValue()
   str &= "["
   str &= expression.index.getValue()
   str &= "]"
-  str &= ")"
 
   return str
 

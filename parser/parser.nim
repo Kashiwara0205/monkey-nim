@@ -432,14 +432,14 @@ proc parseHashLiteral*(parser: Parser): ast.Expression =
   while not parser.peekTokenIs(token.RBRACE):
     parser.nextToken()
     let key = parser.parseExpression(LOWSET)
-    let stringliteral = StringLiteral(key)
 
     if not parser.expectPeekTokenIs(token.COLON):
       return nil
 
     parser.nextToken()
-    let value: Expression =  parser.parseExpression(LOWSET)
-    hash.pairs[stringliteral] = value
+    
+    let value =  parser.parseExpression(LOWSET)
+    hash.pairs[key] = value
     if not parser.peekTokenIs(token.RBRACE) and not parser.expectPeekTokenIs(token.COMMA):
       return nil
 

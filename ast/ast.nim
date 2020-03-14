@@ -401,7 +401,7 @@ proc getValue*(expression: IfExpression): string =
   str &= expression.consequence.getValue()
 
   if expression.alternative != nil:
-    str &= "else "
+    str &= " else "
     str &= expression.alternative.getValue()
 
   return str
@@ -473,6 +473,7 @@ proc getValue*(expression: IndexExpression): string =
   str &= "["
   str &= expression.index.getValue()
   str &= "]"
+  str &= ")"
 
   return str
 

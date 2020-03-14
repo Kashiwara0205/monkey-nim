@@ -186,7 +186,7 @@ proc parseExpression*(parser: Parser, precedence: Priority): Node =
   while not parser.peekTokenIs(token.SEMICOLON) and precedence < parser.peekPrecedence():
     var infix = parser.infixParseFns[parser.peekToken.t_type]
     if infix == nil:
-      return leftExp
+      return  Node(n_type: nExpression, expression: leftExp)
 
     parser.nextToken()
     leftExp = infix(parser, leftExp).expression

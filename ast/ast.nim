@@ -38,7 +38,7 @@ type
     of nStatement:
       statement*: Statement
 
-  Expression* = ref object of Node
+  Expression* = ref object of RootObj
     case e_type*: ExpressionType
     of eIdentifier:
       identifier*: Identifier

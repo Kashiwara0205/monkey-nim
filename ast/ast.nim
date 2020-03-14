@@ -3,56 +3,66 @@ import ../utils/utils
 import tables
 import hashes
 
-type Node* = ref object of RootObj
+type
+  NodeType* = enum
+    nExpression
+    nStatement
 
 type 
   ExpressionType* = enum
-    nIdentifier
-    nBoolean
-    nIntegerLiteral
-    nPrefixExpression
-    nInfixExpression
-    nStringLiteral
-    nIfExpression
-    nFunctionLiteral
-    nCallExpression
-    nArrayLiteral
-    nIndexExpression
-    nHashLiteral
+    eIdentifier
+    eBoolean
+    eIntegerLiteral
+    ePrefixExpression
+    eInfixExpression
+    eStringLiteral
+    eIfExpression
+    eFunctionLiteral
+    eCallExpression
+    eArrayLiteral
+    eIndexExpression
+    eHashLiteral
 
 type
   StatementType* = enum
-    nLetStatement
-    nReturnStatement
-    nExpressionStatement
-    nBlockStatement
+    sLetStatement
+    sReturnStatement
+    sExpressionStatement
+    sBlockStatement
 
 type 
+  Node* = ref object of RootObj
+    case n_type*: NodeType
+    of nExpression:
+      expression: Expression
+    of nStatement:
+      statement: Statement
+
   Expression* = ref object of Node
     case e_type*: ExpressionType
-    of nIdentifier:
+    of eIdentifier:
       identifier*: Identifier
-    of nBoolean:
+    of eBoolean:
       boolean*: Boolean
-    of nIntegerLiteral:
+    of eIntegerLiteral:
       integerLit*: IntegerLiteral
-    of nPrefixExpression:
+    of ePrefixExpression:
       prefixExp*: PrefixExpression
-    of nInfixExpression:
+    of eInfixExpression:
       infixExp*: InfixExpression
-    of nStringLiteral:
+    of eStringLiteral:
       stringLit*: StringLiteral
-    of nIfExpression:
+    of eIfExpression:
       ifExp*: IfExpression
-    of nFunctionLiteral:
+    of eFunctionLiteral:
       functionLit*: FunctionLiteral
-    of nCallExpression:
+    of eCallExpression:
       callExp*: CallExpression
-    of nArrayLiteral:
+    of eArrayLiteral:
       arrayLit*: ArrayLiteral
-    of nIndexExpression:
+    of eIndexExpression:
       indexExp*: IndexExpression
-    of nHashLiteral:
+    of eHashLiteral:
       hashLit*: HashLiteral
 
   # This type controll variable
@@ -144,13 +154,13 @@ type
 
   Statement* = ref object of Node
     case s_type*: StatementType
-    of nLetStatement: 
+    of sLetStatement: 
     letStmt* : LetStatement
-    of nReturnStatement:
+    of sReturnStatement:
     returnStmt* : ReturnStatement
-    of nExpressionStatement:
+    of sExpressionStatement:
     expressionStmt* : ExpressionStatement
-    of nBlockStatement:
+    of sBlockStatement:
     blockStmt* : BlockStatement
 
   # This type used by following program
@@ -234,60 +244,77 @@ proc getTokenLiteral*(statement: BlockStatement): string
 proc getValue*(statement: BlockStatement): string 
 
 #----------------------------------------
+# Node proc
+#----------------------------------------
+proc getTokenLiteral*(node: Node):string =
+  case node.n_type:
+  of nExpression:
+    return node.expression.getTokenLiteral
+  of nStatement:
+    return node.statement.getTokenLiteral
+
+proc getValue*(node: Node):string =
+  case node.n_type:
+    of nExpression:
+      return node.expression.getValue
+    of nStatement:
+      return node.statement.getValue
+
+#----------------------------------------
 # Expression proc
 #----------------------------------------
 proc getTokenLiteral*(expression: Expression):string =
   case expression.e_type
-  of nIdentifier:
+  of eIdentifier:
     return expression.identifier.getTokenLiteral
-  of nBoolean:
+  of eBoolean:
     return expression.boolean.getTokenLiteral
-  of nIntegerLiteral:
+  of eIntegerLiteral:
     return expression.integerLit.getTokenLiteral
-  of nPrefixExpression:
+  of ePrefixExpression:
     return expression.prefixExp.getTokenLiteral
-  of nInfixExpression:
+  of eInfixExpression:
     return expression.infixExp.getTokenLiteral
-  of nStringLiteral:
+  of eStringLiteral:
     return expression.stringLit.getTokenLiteral
-  of nIfExpression:
+  of eIfExpression:
     return expression.ifExp.getTokenLiteral
-  of nFunctionLiteral:
+  of eFunctionLiteral:
     return expression.functionLit.getTokenLiteral
-  of nCallExpression:
+  of eCallExpression:
     return expression.callExp.getTokenLiteral
-  of nArrayLiteral:
+  of eArrayLiteral:
     return expression.arrayLit.getTokenLiteral
-  of nIndexExpression:
+  of eIndexExpression:
     return expression.indexExp.getTokenLiteral
-  of nHashLiteral:
+  of eHashLiteral:
     return expression.hashLit.getTokenLiteral
 
 proc getValue*(expression: Expression):string =
   case expression.e_type
-  of nIdentifier:
+  of eIdentifier:
     return expression.identifier.getValue
-  of nBoolean:
+  of eBoolean:
     return expression.boolean.getValue
-  of nIntegerLiteral:
+  of eIntegerLiteral:
     return expression.integerLit.getValue
-  of nPrefixExpression:
+  of ePrefixExpression:
     return expression.prefixExp.getValue
-  of nInfixExpression:
+  of eInfixExpression:
     return expression.infixExp.getValue
-  of nStringLiteral:
+  of eStringLiteral:
     return expression.stringLit.getValue
-  of nIfExpression:
+  of eIfExpression:
     return expression.ifExp.getValue
-  of nFunctionLiteral:
+  of eFunctionLiteral:
     return expression.functionLit.getValue
-  of nCallExpression:
+  of eCallExpression:
     return expression.callExp.getValue
-  of nArrayLiteral:
+  of eArrayLiteral:
     return expression.arrayLit.getValue
-  of nIndexExpression:
+  of eIndexExpression:
     return expression.indexExp.getValue
-  of nHashLiteral:
+  of eHashLiteral:
     return expression.hashLit.getValue
 
 proc hash*(literal: Expression): Hash =
@@ -300,24 +327,24 @@ proc hash*(literal: Expression): Hash =
 #----------------------------------------
 proc getTokenLiteral*(statement: Statement): string =
   case statement.s_type
-  of nLetStatement: 
+  of sLetStatement: 
     return statement.letStmt.getTokenLiteral
-  of nReturnStatement:
+  of sReturnStatement:
     return statement.returnStmt.getTokenLiteral
-  of nExpressionStatement:
+  of sExpressionStatement:
     return statement.expressionStmt.getTokenLiteral
-  of nBlockStatement:
+  of sBlockStatement:
     return statement.blockStmt.getTokenLiteral
 
 proc getValue*(statement: Statement): string =
   case statement.s_type
-  of nLetStatement: 
+  of sLetStatement: 
     return statement.letStmt.getValue
-  of nReturnStatement:
+  of sReturnStatement:
     return statement.returnStmt.getValue
-  of nExpressionStatement:
+  of sExpressionStatement:
     return statement.expressionStmt.getValue
-  of nBlockStatement:
+  of sBlockStatement:
     return statement.blockStmt.getValue
 
 #----------------------------------------

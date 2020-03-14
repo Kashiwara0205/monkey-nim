@@ -51,7 +51,7 @@ proc parseProgram*(parser: Parser): ast.Program
 proc parseIdentifier*(parser: Parser): ast.Expression
 proc parseIntegerLiteral*(parser: Parser): ast.Expression
 proc parseExpression*(parser: Parser, precedence: Priority): ast.Expression
-proc parseLetStatement*(parser: Parser): ast.Statement
+proc parssLetStatement*(parser: Parser): ast.Statement
 proc parseReturnStatement*(parser: Parser): ast.Statement
 proc parseExpressionStatement*(parser: Parser): ast.Statement
 proc parseStatement*(parser: Parser): ast.Statement
@@ -158,7 +158,7 @@ proc parseProgram*(parser: Parser): ast.Program =
 
 proc parseIdentifier*(parser: Parser): ast.Expression =
   let identifier = ast.Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
-  return ast.Expression(e_type: nIdentifier, identifier: identifier)
+  return ast.Expression(e_type: eIdentifier, identifier: identifier)
 
 proc parseIntegerLiteral*(parser: Parser): ast.Expression =
   var literal = ast.IntegerLiteral(tok: parser.curToken)
@@ -172,7 +172,7 @@ proc parseIntegerLiteral*(parser: Parser): ast.Expression =
 
   literal.number = value
 
-  return ast.Expression(e_type: nIntegerLiteral, integerLit: literal)
+  return ast.Expression(e_type: eIntegerLiteral, integerLit: literal)
 
 proc parseExpression*(parser: Parser, precedence: Priority): ast.Expression =
   var prefix = parser.prefixParseFns[parser.curToken.t_type]
@@ -192,7 +192,7 @@ proc parseExpression*(parser: Parser, precedence: Priority): ast.Expression =
 
   return leftExp
 
-proc parseLetStatement*(parser: Parser): ast.Statement =
+proc parssLetStatement*(parser: Parser): ast.Statement =
   var statement = ast.LetStatement(tok: parser.curToken)
 
   if not parser.expectPeekTokenIs(token.IDENT):
@@ -209,7 +209,7 @@ proc parseLetStatement*(parser: Parser): ast.Statement =
   if parser.peekTokenIs(token.SEMICOLON):
     parser.nextToken()
 
-  return ast.Statement(s_type: nLetStatement, letStmt: statement)
+  return ast.Statement(s_type: sLetStatement, letStmt: statement)
 
 proc parseReturnStatement*(parser: Parser): ast.Statement =
   var statement = ast.ReturnStatement(tok: parser.curToken)
@@ -219,7 +219,7 @@ proc parseReturnStatement*(parser: Parser): ast.Statement =
   while not parser.curTokenIs(token.SEMICOLON):
     parser.nextToken()
 
-  return ast.Statement(s_type: nReturnStatement, returnStmt: statement)
+  return ast.Statement(s_type: sReturnStatement, returnStmt: statement)
 
 proc parseExpressionStatement*(parser: Parser): ast.Statement =
   var statement = ast.ExpressionStatement(tok: parser.curToken)
@@ -227,12 +227,12 @@ proc parseExpressionStatement*(parser: Parser): ast.Statement =
   if parser.peekTokenIs(token.SEMICOLON):
     parser.nextToken()
 
-  return ast.Statement(s_type: nExpressionStatement, expressionStmt: statement)
+  return ast.Statement(s_type: sExpressionStatement, expressionStmt: statement)
 
 proc parseStatement*(parser: Parser): ast.Statement =
   case parser.curToken.t_type:
   of token.LET:
-    return parser.parseLetStatement()
+    return parser.parssLetStatement()
   of token.RETURN:
     return parser.parseReturnStatement()
   else:
@@ -251,14 +251,14 @@ proc parseBlockStatement*(parser: Parser): ast.Statement =
 
     parser.nextToken()
 
-  return ast.Statement(s_type: nBlockStatement, blockStmt: block_statement)
+  return ast.Statement(s_type: sBlockStatement, blockStmt: block_statement)
 
 proc parsePrefixExpression*(parser: Parser): ast.Expression =
   var expression = ast.PrefixExpression(tok: parser.curToken, operator: parser.curToken.literal)
   parser.nextToken()
   expression.right = parser.parseExpression(PREFIX)
 
-  return ast.Expression(e_type: nPrefixExpression, prefixExp: expression)
+  return ast.Expression(e_type: ePrefixExpression, prefixExp: expression)
 
 proc parseInfixExpression*(parser: Parser, left: ast.Expression): ast.Expression =
   var expression = ast.InfixExpression(tok: parser.curToken, operator: parser.curToken.literal, left: left)
@@ -267,11 +267,11 @@ proc parseInfixExpression*(parser: Parser, left: ast.Expression): ast.Expression
   parser.nextToken()
   expression.right = parser.parseExpression(precedence)
 
-  return ast.Expression(e_type: nInfixExpression, infixExp: expression)
+  return ast.Expression(e_type: eInfixExpression, infixExp: expression)
 
 proc parseBoolean*(parser: Parser): ast.Expression =
   var boolean = ast.Boolean(tok: parser.curToken, value: parser.curTokenIs(token.TRUE))
-  return ast.Expression(e_type: nBoolean, boolean: boolean)
+  return ast.Expression(e_type: eBoolean, boolean: boolean)
 
 proc parseGroupExpression*(parser: Parser): ast.Expression =
   parser.nextToken()
@@ -307,7 +307,7 @@ proc parseIfExpression*(parser: Parser): ast.Expression =
 
     expression.alternative = parser.parseBlockStatement().blockStmt
 
-  return ast.Expression(e_type: nIfExpression, ifExp: expression)
+  return ast.Expression(e_type: eIfExpression, ifExp: expression)
 
 proc parseFunctionParameters*(parser: Parser): ref seq[ast.Identifier] =
   var identifiers:ref seq[ast.Identifier]
@@ -353,7 +353,7 @@ proc parseFunctionLiteral*(parser: Parser): ast.Expression =
 
   literal.body = parser.parseBlockStatement().blockStmt
 
-  return ast.Expression(e_type: nFunctionLiteral, functionLit: literal)
+  return ast.Expression(e_type: eFunctionLiteral, functionLit: literal)
 
 proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[ast.Expression] =
   var list: ref seq[ast.Expression]
@@ -381,7 +381,7 @@ proc parseCallExpression*(parser: Parser, function: ast.Expression): ast.Express
   var expression = ast.CallExpression(tok: parser.curToken, function: function)
   expression.arguments = parser.parseCallArguments()
 
-  return ast.Expression(e_type: nCallExpression, callExp: expression)
+  return ast.Expression(e_type: eCallExpression, callExp: expression)
 
 proc parseCallArguments*(parser: Parser): ref seq[ast.Expression] =
   var args: ref seq[ast.Expression]
@@ -407,13 +407,13 @@ proc parseCallArguments*(parser: Parser): ref seq[ast.Expression] =
 
 proc parseStringLiteral*(parser: Parser): ast.Expression =
   let string_literal = ast.StringLiteral(tok: parser.curToken, value: parser.curToken.literal)
-  return ast.Expression(e_type: nStringLiteral, stringLit: string_literal)
+  return ast.Expression(e_type: eStringLiteral, stringLit: string_literal)
 
 proc parseArrayLiteral*(parser: Parser): ast.Expression =
   var literal = ast.ArrayLiteral(tok: parser.curToken)
   literal.elements = parser.parseExpressionList(token.RBRACKET)
 
-  return ast.Expression(e_type: nArrayLiteral, arrayLit: literal)
+  return ast.Expression(e_type: eArrayLiteral, arrayLit: literal)
 
 proc parseIndexExpression*(parser: Parser, left: ast.Expression): ast.Expression =
   var expression = ast.IndexExpression(tok: parser.curToken, left: left)
@@ -424,7 +424,7 @@ proc parseIndexExpression*(parser: Parser, left: ast.Expression): ast.Expression
   if not parser.expectPeekTokenIs(token.RBRACKET):
     return nil
 
-  return ast.Expression(e_type: nIndexExpression, indexExp: expression)
+  return ast.Expression(e_type: eIndexExpression, indexExp: expression)
 
 proc parseHashLiteral*(parser: Parser): ast.Expression =
   var hash = ast.HashLiteral(tok: parser.curToken)
@@ -437,7 +437,7 @@ proc parseHashLiteral*(parser: Parser): ast.Expression =
       return nil
 
     parser.nextToken()
-    
+
     let value =  parser.parseExpression(LOWSET)
     hash.pairs[key] = value
     if not parser.peekTokenIs(token.RBRACE) and not parser.expectPeekTokenIs(token.COMMA):
@@ -446,4 +446,4 @@ proc parseHashLiteral*(parser: Parser): ast.Expression =
   if not parser.expectPeekTokenIs(token.RBRACE):
     return nil
 
-  return ast.Expression(e_type: nHashLiteral, hashLit: hash)
+  return ast.Expression(e_type: eHashLiteral, hashLit: hash)

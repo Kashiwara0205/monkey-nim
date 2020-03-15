@@ -3,8 +3,8 @@ import ../obj/obj
 from strformat import fmt
 
 var
-  TRUE = BooleanObj(value: true)
-  FALSE = BooleanObj(value: false)
+  TRUE = Object( o_type: oBoolean, boolean_obj: BooleanObj(value: true))
+  FALSE = Object( o_type: oBoolean, boolean_obj: BooleanObj(value: false))
 
 # forward declaration
 proc newError(): ErrorObj
@@ -48,9 +48,9 @@ proc evalProgram(program: Program, env: Enviroment): Object =
 proc evalExpression(expression: Expression, env: Enviroment): Object = 
   case expression.e_type:
   of eIntegerLiteral:
-    return Object()
+    return Object(o_type: oInteger, integer_obj: IntegerObj(value: IntegerLiteral(expression).number))
   of eBoolean:
-    return Object()
+    return convNativeBoolToBoolObj(Boolean(expression).value)
   of ePrefixExpression:
     return Object()
   of eInfixExpression:
@@ -77,14 +77,14 @@ proc evalStatement(statement: Statement, env: Enviroment): Object =
   of sLetStatement:
     return Object()
   of sExpressionStatement:
-    return Object()
+    return evalExpression(ExpressionStatement(statement).expression, env)
   of sBlockStatement:
     return Object()
   of sReturnStatement:
     return Object()
 
 proc convNativeBoolToBoolObj(input: bool): BooleanObj =
-  return if input : TRUE else : FALSE
+  return if input : TRUE.boolean_obj else : FALSE.boolean_obj
 
 proc evalPrefixExpression(operator: string, right: Object): Object =
   case operator
@@ -120,13 +120,17 @@ proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): 
 
   case operator
   of "+":
-    return IntegerObj(value: leftVal + rightVal)
+    let integer_obj = IntegerObj(value: leftVal + rightVal)
+    return Object(o_type: oInteger, integer_obj: integer_obj)
   of "-":
-    return IntegerObj(value: leftVal - rightVal)
+    let integer_obj = IntegerObj(value: leftVal - rightVal)
+    return Object(o_type: oInteger, integer_obj: integer_obj)
   of "*":
-    return IntegerObj(value: leftVal * rightVal)
+    let integer_obj = IntegerObj(value: leftVal * rightVal)
+    return Object(o_type: oInteger, integer_obj: integer_obj)
   of "/":
-    return IntegerObj(value: (int(leftVal) / int(rightVal)).toInt)
+    let integer_obj = IntegerObj(value: (int(leftVal) / int(rightVal)).toInt)
+    return Object(o_type: oInteger, integer_obj: integer_obj)
   of "<":
     return convNativeBoolToBoolObj(leftVal < rightVal)
   of ">":

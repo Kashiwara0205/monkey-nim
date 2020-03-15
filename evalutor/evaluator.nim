@@ -48,11 +48,16 @@ proc evalProgram(program: Program, env: Enviroment): Object =
 proc evalExpression(expression: Expression, env: Enviroment): Object = 
   case expression.e_type:
   of eIntegerLiteral:
-    return Object(o_type: oInteger, integer_obj: IntegerObj(value: IntegerLiteral(expression).number))
+    let integer_obj =  IntegerObj(value: IntegerLiteral(expression).number)
+    return Object(o_type: oInteger, integer_obj: integer_obj)
   of eBoolean:
     return convNativeBoolToBoolObj(Boolean(expression).value)
   of ePrefixExpression:
-    return Object()
+    let prefix = PrefixExpression(expression)
+    let right = evalExpression(prefix.right, env)
+    if isError(right):
+      return right
+    return evalPrefixExpression(prefix.operator, right)
   of eInfixExpression:
     return Object()
   of eIfExpression:

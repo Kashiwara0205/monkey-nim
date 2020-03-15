@@ -3,3 +3,4 @@ token/nimcache/
 ast/nimcache/
 test_utils/nimcache/
 utils/nimcache/
+object/nimcache/

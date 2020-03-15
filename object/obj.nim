@@ -301,3 +301,28 @@ proc inspect*(obj: HashObj): string =
   str &= "}"
 
   return str
+
+#----------------------------------------
+# Enviroment proc
+#----------------------------------------
+proc newEnv*(): Enviroment = 
+  let store = initTable[string, Object]()
+  return Enviroment(store: store)
+
+proc newEncloseEnv*(outer: Enviroment): Enviroment =
+  let new_env = newEnv()
+  new_env.outer = outer
+  return new_env
+
+proc get*(env: Enviroment, name: string): (Object, bool) =
+  let existance = env.store.hasKey(name)
+  if not existance and env.outer != nil:
+    # return from outer scope
+    return env.outer.get(name)
+  else:
+    # return from inner scope
+    return (env.store[name], existance)
+
+proc set*(env: Enviroment, name: string, val: Object): Object = 
+  env.store[name] = val
+  return val

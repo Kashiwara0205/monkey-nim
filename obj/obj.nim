@@ -42,40 +42,40 @@ type
       hash_obj*: HashObj
 
   IntegerObj* = ref object of Object
-    value: int64
+    value*: int64
 
   BooleanObj* = ref object of Object
-    value: bool
+    value*: bool
 
   NullObj* = ref object of Object
 
   ReturnValueObj* = ref object of Object
-    value: Object
+    value*: Object
 
   ErrorObj* = ref object of Object
-    message: string
+    message*: string
 
   FunctionObj* = ref object of Object
     parameters*: ref seq[Identifier]
     body*: BlockStatement
-    env: Enviroment
+    env*: Enviroment
 
   StringObj* = ref object of Object
-    value: string
+    value*: string
 
   BuiltinFunction* = proc(args: seq[Object]): Object
   BuiltinObj* = ref object of Object
-    fn: BuiltinFunction
+    fn*: BuiltinFunction
 
   ArrayObj* = ref object of Object
-    elements: seq[Object]
+    elements*: seq[Object]
 
   HashKey* = ref object of Object
-    obj_type: ObjectType
-    value: uint64
+    obj_type*: ObjectType
+    value*: uint64
   HashPair* = ref object of Object
-    key: Object
-    value: Object
+    key*: Object
+    value*: Object
   HashObj* = ref object of Object
     pairs: Table[HashKey, HashPair]
   Hashable* = ref object of Object
@@ -120,6 +120,11 @@ proc inspect*(obj: ArrayObj): string
 
 proc getType*(obj: HashObj):ObjectType
 proc inspect*(obj: HashObj): string
+
+proc newEnv*(): Enviroment 
+proc newEncloseEnv*(outer: Enviroment): Enviroment
+proc get*(env: Enviroment, name: string): (Object, bool)
+proc set*(env: Enviroment, name: string, val: Object): Object
 
 #----------------------------------------
 # Object proc
@@ -319,6 +324,9 @@ proc get*(env: Enviroment, name: string): (Object, bool) =
   if not existance and env.outer != nil:
     # return from outer scope
     return env.outer.get(name)
+  elif not existance and env.outer == nil:
+    # return null when not exists variable
+    return (NullObj(), existance)
   else:
     # return from inner scope
     return (env.store[name], existance)

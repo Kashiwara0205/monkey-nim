@@ -11,7 +11,7 @@ new(e)
 proc get_program*(input: string): ast.Program =
   let lex = lexer.newLexer(input)
   let p = lex.newParser()
-  return p.parseProgram()
+  return p.parseProgram().program
 
 proc output_testname*(testname: string): void =
   echo "+-+-+-+-+-+-+-+-+-+"

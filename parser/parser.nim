@@ -47,7 +47,7 @@ proc peekTokenIs*(parser: Parser, t_type: token.TokenType): bool
 proc expectPeekTokenIs*(parser: Parser, t_type: token.TokenType): bool
 proc peekPrecedence*(parser: Parser): Priority
 proc curPrecedence*(parser: Parser): Priority
-proc parseProgram*(parser: Parser): Program
+proc parseProgram*(parser: Parser): Node
 proc parseIdentifier*(parser: Parser): Node
 proc parseIntegerLiteral*(parser: Parser): Node
 proc parseExpression*(parser: Parser, precedence: Priority): Node
@@ -142,7 +142,7 @@ proc newParser*(lex: lexer.Lexer): Parser =
 
   return parser
 
-proc parseProgram*(parser: Parser): Program =
+proc parseProgram*(parser: Parser): Node =
   var prgoram = Program()
 
   prgoram.statements = @[]
@@ -155,7 +155,7 @@ proc parseProgram*(parser: Parser): Program =
 
     parser.nextToken()
 
-  return prgoram
+  return Node(n_type: nProgram, program: prgoram)
 
 proc parseIdentifier*(parser: Parser): Node =
   let identifier = Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)

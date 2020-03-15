@@ -7,7 +7,7 @@ type
   NodeType* = enum
     nExpression
     nStatement
-
+    nProgram
 type 
   ExpressionType* = enum
     eIdentifier
@@ -33,10 +33,15 @@ type
 type 
   Node* = ref object of RootObj
     case n_type*: NodeType
+    of nProgram:
+      program*: Program
     of nExpression:
       expression*: Expression
     of nStatement:
       statement*: Statement
+
+  Program* = ref object of RootObj
+    statements* :seq[Node]
 
   Expression* = ref object of RootObj
     case e_type*: ExpressionType
@@ -192,6 +197,9 @@ type
 proc getTokenLiteral*(node: Node): string
 proc getValue*(node: Node) :string
 
+proc getToeknLiteral*(p: Program): string
+proc getValue*(p: Program): string
+
 proc getTokenLiteral*(expression: Expression): string
 proc getValue*(expression: Expression) :string
 
@@ -255,13 +263,33 @@ proc getTokenLiteral*(node: Node):string =
     return node.expression.getTokenLiteral()
   of nStatement:
     return node.statement.getTokenLiteral()
+  of nProgram:
+    return node.program.getToeknLiteral()
 
 proc getValue*(node: Node):string =
   case node.n_type:
-    of nExpression:
-      return node.expression.getValue()
-    of nStatement:
-      return node.statement.getValue()
+  of nExpression:
+    return node.expression.getValue()
+  of nStatement:
+    return node.statement.getValue()
+  of nProgram:
+    return node.program.getValue()
+
+#----------------------------------------
+# Program proc
+#----------------------------------------
+proc getToeknLiteral*(p: Program): string =
+  if p.statements.len() > 0:
+    return p.statements[0].getTokenLiteral()
+  else:
+    return ""
+
+proc getValue*(p: Program): string =
+  var str = ""
+  for elem in p.statements:
+    str &= elem.getValue()
+
+  return str
 
 #----------------------------------------
 # Expression proc
@@ -578,23 +606,6 @@ proc getTokenLiteral*(statement: BlockStatement): string =
 proc getValue*(statement: BlockStatement): string =
   var str = ""
   for elem in statement.statements:
-    str &= elem.getValue()
-
-  return str
-
-type
-  Program* = ref object
-    statements* :seq[Node]
-
-proc getToeknLiteral*(p: Program): string =
-  if p.statements.len() > 0:
-    return p.statements[0].getTokenLiteral()
-  else:
-    return ""
-
-proc getValue*(p: Program): string =
-  var str = ""
-  for elem in p.statements:
     str &= elem.getValue()
 
   return str

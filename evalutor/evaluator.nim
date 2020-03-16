@@ -17,7 +17,9 @@ proc convNativeBoolToBoolObj(input: bool): BooleanObj
 proc evalBangOperatorExpression(right: Object): Object
 proc evalMinusPrefixOperatorExpression(right: Object): Object
 proc evalPrefixExpression(operator: string, right: Object): Object
+proc evalInfixExpression(operator: string, left: Object, right: Object): Object
 proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): Object
+proc evalStringInfixExpression(operator: string, left: Object, right: Object): Object 
 
 proc newError(): ErrorObj =
   return ErrorObj()
@@ -54,12 +56,21 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
     return convNativeBoolToBoolObj(Boolean(expression).value)
   of ePrefixExpression:
     let prefix = PrefixExpression(expression)
+
     let right = evalExpression(prefix.right, env)
-    if isError(right):
-      return right
+    if isError(right): return right
+    
     return evalPrefixExpression(prefix.operator, right)
   of eInfixExpression:
-    return Object()
+    let infix = InfixExpression(expression)
+
+    let left = evalExpression(infix.left, env)
+    if isError(left): return left
+
+    let right = evalExpression(infix.right, env)
+    if isError(right): return right
+    
+    return evalInfixExpression(infix.operator, left, right)
   of eIfExpression:
     return Object()
   of eIdentifier:
@@ -99,6 +110,21 @@ proc evalPrefixExpression(operator: string, right: Object): Object =
     return evalMinusPrefixOperatorExpression(right)
   else:
     return newError()
+
+proc is_left_and_right_integer(left: Object, right: Object): bool=
+  return left.o_type == right.o_type and right.o_type == oInteger
+
+proc is_left_and_right_string(left: Object, right: Object): bool=
+  return left.o_type == right.o_type and right.o_type == oString
+
+proc evalInfixExpression(operator: string, left: Object, right: Object): Object = 
+  if is_left_and_right_integer(left, right): return evalIntegerInfixExpression(operator, left, right)
+  if is_left_and_right_string(left, right): return evalStringInfixExpression(operator, left, right)
+  if operator == "==": return convNativeBoolToBoolObj(left == right)
+  if operator == "!=": return convNativeBoolToBoolObj(left != right)
+  if left.o_type != right.o_type: return newError()
+  
+  return newError()
 
 proc evalBangOperatorExpression(right: Object): Object =
   case right.o_type
@@ -146,6 +172,12 @@ proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): 
     return convNativeBoolToBoolObj(leftVal != rightVal)
   else:
     return newError()
+
+proc evalStringInfixExpression(operator: string, left: Object, right: Object): Object =
+  if operator != "+" : return newError()
+
+  let combine = StringObj(left).value & StringObj(right).value
+  return StringObj(value: combine)
 
 proc isTruthy(obj: Object): bool =
   case obj.o_type

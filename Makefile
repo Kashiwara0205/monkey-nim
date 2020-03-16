@@ -3,7 +3,7 @@ all:
 	nim compile lexer/lexer.nim
 	nim compile ast/ast.nim
 	nim compile parser/parser.nim
-	nim compile object/obj.nim
+	nim compile obj/obj.nim
 	nim compile token/minitest.nim
 	nim compile lexer/minitest.nim
 	nim compile parser/minitest.nim
@@ -11,6 +11,19 @@ all:
 	./token/minitest
 	./lexer/minitest
 	./parser/minitest
+
+init:
+	curl https://nim-lang.org/choosenim/init.sh -sSf | sh
+	nimble install fnv
+	nim compile token/token.nim
+	nim compile lexer/lexer.nim
+	nim compile ast/ast.nim
+	nim compile parser/parser.nim
+	nim compile obj/obj.nim
+	nim compile token/minitest.nim
+	nim compile lexer/minitest.nim
+	nim compile parser/minitest.nim
+	nim compile test_utils/test_utils.nim
 
 compile: 
 	nim compile --run token/token.nim

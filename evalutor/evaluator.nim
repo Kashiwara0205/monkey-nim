@@ -3,6 +3,7 @@ import ../obj/obj
 from strformat import fmt
 
 var
+  NULL = Object( o_type: oNull, null_obj: NullObj())
   TRUE = Object( o_type: oBoolean, boolean_obj: BooleanObj(value: true))
   FALSE = Object( o_type: oBoolean, boolean_obj: BooleanObj(value: false))
 
@@ -11,7 +12,7 @@ proc newError(): ErrorObj
 proc isError(obj: Object): bool
 proc evalProgram(program: Program, env: Enviroment): Object
 proc eval(node: Node, env: Enviroment): Object
-proc evalExpression(expression: Expression, env: Enviroment): Object 
+proc evalExpression(expression: Expression, env: Enviroment): Object
 proc evalStatement(statement: Statement, env: Enviroment): Object
 proc convNativeBoolToBoolObj(input: bool): BooleanObj
 proc evalBangOperatorExpression(right: Object): Object
@@ -19,17 +20,19 @@ proc evalMinusPrefixOperatorExpression(right: Object): Object
 proc evalPrefixExpression(operator: string, right: Object): Object
 proc evalInfixExpression(operator: string, left: Object, right: Object): Object
 proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): Object
-proc evalStringInfixExpression(operator: string, left: Object, right: Object): Object 
+proc evalStringInfixExpression(operator: string, left: Object, right: Object): Object
+proc evalIfExpression(expression: IfExpression, env: Enviroment): Object
+proc isTruthy(obj: Object): bool
 
 proc newError(): ErrorObj =
   return ErrorObj()
 
-proc isError(obj: Object): bool = 
+proc isError(obj: Object): bool =
   return if obj != nil: obj.o_type == oError else: false
 
 proc eval(node: Node, env: Enviroment): Object =
   case node.n_type
-  of nProgram: 
+  of nProgram:
     return evalProgram(node.program, env)
   of nExpression:
     return evalExpression(node.expression, env)
@@ -47,7 +50,7 @@ proc evalProgram(program: Program, env: Enviroment): Object =
     else:
       discard
 
-proc evalExpression(expression: Expression, env: Enviroment): Object = 
+proc evalExpression(expression: Expression, env: Enviroment): Object =
   case expression.e_type:
   of eIntegerLiteral:
     let integer_obj =  IntegerObj(value: IntegerLiteral(expression).number)
@@ -59,7 +62,7 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
 
     let right = evalExpression(prefix.right, env)
     if isError(right): return right
-    
+
     return evalPrefixExpression(prefix.operator, right)
   of eInfixExpression:
     let infix = InfixExpression(expression)
@@ -69,10 +72,11 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
 
     let right = evalExpression(infix.right, env)
     if isError(right): return right
-    
+
     return evalInfixExpression(infix.operator, left, right)
   of eIfExpression:
-    return Object()
+    let if_expression = IfExpression(expression)
+    return evalIfExpression(if_expression, env)
   of eIdentifier:
     return Object()
   of eFunctionLiteral:
@@ -88,7 +92,7 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
   of eHashLiteral:
     return Object()
 
-proc evalStatement(statement: Statement, env: Enviroment): Object = 
+proc evalStatement(statement: Statement, env: Enviroment): Object =
   case statement.s_type:
   of sLetStatement:
     return Object()
@@ -117,13 +121,13 @@ proc is_left_and_right_integer(left: Object, right: Object): bool=
 proc is_left_and_right_string(left: Object, right: Object): bool=
   return left.o_type == right.o_type and right.o_type == oString
 
-proc evalInfixExpression(operator: string, left: Object, right: Object): Object = 
+proc evalInfixExpression(operator: string, left: Object, right: Object): Object =
   if is_left_and_right_integer(left, right): return evalIntegerInfixExpression(operator, left, right)
   if is_left_and_right_string(left, right): return evalStringInfixExpression(operator, left, right)
   if operator == "==": return convNativeBoolToBoolObj(left == right)
   if operator == "!=": return convNativeBoolToBoolObj(left != right)
   if left.o_type != right.o_type: return newError()
-  
+
   return newError()
 
 proc evalBangOperatorExpression(right: Object): Object =
@@ -179,6 +183,19 @@ proc evalStringInfixExpression(operator: string, left: Object, right: Object): O
   let combine = StringObj(left).value & StringObj(right).value
   return StringObj(value: combine)
 
+proc evalIfExpression(expression: IfExpression, env: Enviroment): Object =
+  let condition = evalExpression(expression.condition, env)
+  if isError(condition): return condition
+
+  if isTruthy(condition):
+    let consequence = expression.consequence
+    return evalStatement(consequence, env)
+  elif expression.alternative != nil:
+    let alternative = expression.alternative
+    return evalStatement(alternative, env)
+  else:
+    return NULL
+
 proc isTruthy(obj: Object): bool =
   case obj.o_type
   of oNull:
@@ -201,7 +218,7 @@ proc evalIdentifier(node: Identifier, env: Enviroment): Object =
 proc evalExpression(expressions: seq[Expression], env: Enviroment): seq[Object] =
   var objects: seq[Object]
   for expression in expressions:
-    
+
 
   return objects
 ]#

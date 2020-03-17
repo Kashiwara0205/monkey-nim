@@ -23,6 +23,7 @@ proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): 
 proc evalStringInfixExpression(operator: string, left: Object, right: Object): Object
 proc evalIfExpression(expression: IfExpression, env: Enviroment): Object
 proc isTruthy(obj: Object): bool
+proc evalIdentifier(node: Identifier, env: Enviroment): Object
 
 proc newError(): ErrorObj =
   return ErrorObj()
@@ -54,6 +55,7 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
   case expression.e_type:
   of eIntegerLiteral:
     let integer_obj =  IntegerObj(value: IntegerLiteral(expression).number)
+    
     return Object(o_type: oInteger, integer_obj: integer_obj)
   of eBoolean:
     return convNativeBoolToBoolObj(Boolean(expression).value)
@@ -76,11 +78,18 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
     return evalInfixExpression(infix.operator, left, right)
   of eIfExpression:
     let if_expression = IfExpression(expression)
+
     return evalIfExpression(if_expression, env)
   of eIdentifier:
-    return Object()
+    let identifier = Identifier(expression)
+
+    return evalIdentifier(identifier, env)
   of eFunctionLiteral:
-    return Object()
+    let function = FunctionLiteral(expression)
+    let params = function.parameters
+    let body = function.body
+
+    return FunctionObj(parameters: params, env: env, body: body)
   of eCallExpression:
     return Object()
   of eStringLiteral:

@@ -24,6 +24,8 @@ proc evalStringInfixExpression(operator: string, left: Object, right: Object): O
 proc evalIfExpression(expression: IfExpression, env: Enviroment): Object
 proc isTruthy(obj: Object): bool
 proc evalIdentifier(node: Identifier, env: Enviroment): Object
+proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): seq[Object]
+proc extendFunctionEnv(fn: FunctionObj, args: ref seq[Object]): Enviroment
 
 proc newError(): ErrorObj =
   return ErrorObj()
@@ -91,7 +93,14 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
 
     return FunctionObj(parameters: params, env: env, body: body)
   of eCallExpression:
-    return Object()
+    let call = CallExpression(expression)
+    let function = evalExpression(call.function, env)
+    if isError(function): return function
+
+    let args = evalExpressions(call.arguments, env)
+    if args.len == 1 and isError(args[0]): return args[0]
+
+    return applyFunction(function, args)
   of eStringLiteral:
     return Object()
   of eArrayLiteral:
@@ -100,6 +109,40 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
     return Object()
   of eHashLiteral:
     return Object()
+
+proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): seq[Object] =
+  var objects: seq[Object]
+
+  for expression in expressions[]:
+    let evaluted = evalExpression(expression, env)
+
+    if isError(evaluted): 
+      var error: seq[Object]
+      error.add(evaluted)
+      return error
+
+    objects.add(evaluted)
+
+  return objects
+
+proc applyFunction(fn: Object, args: ref seq[Expression]): Object =
+  case fn.o_type
+  of oFunction:
+    let extendEnv = extendFunctionEnv()
+  of oBuiltin:
+
+  else: 
+    return newError()
+
+proc extendFunctionEnv(fn: FunctionObj, args: ref seq[Object]): Enviroment =
+  var env = newEncloseEnv(fn.env)
+
+  var count: int = 0
+  for param in fn.parameters[]:
+    env = env.setEnv(param.variable_name, args[count])
+    count = count + 1
+
+  return env
 
 proc evalStatement(statement: Statement, env: Enviroment): Object =
   case statement.s_type:

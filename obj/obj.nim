@@ -319,7 +319,7 @@ proc newEncloseEnv*(outer: Enviroment): Enviroment =
   new_env.outer = outer
   return new_env
 
-proc get*(env: Enviroment, name: string): (Object, bool) =
+proc getEnv*(env: Enviroment, name: string): (Object, bool) =
   let existance = env.store.hasKey(name)
   if not existance and env.outer != nil:
     # return from outer scope
@@ -331,6 +331,6 @@ proc get*(env: Enviroment, name: string): (Object, bool) =
     # return from inner scope
     return (env.store[name], existance)
 
-proc set*(env: Enviroment, name: string, val: Object): Object = 
+proc setEnv*(env: Enviroment, name: string, val: Object): Object = 
   env.store[name] = val
   return val

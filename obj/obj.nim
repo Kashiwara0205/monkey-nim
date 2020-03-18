@@ -63,12 +63,12 @@ type
   StringObj* = ref object of Object
     value*: string
 
-  BuiltinFunction* = proc(args: seq[Object]): Object
+  BuiltinFunction* = proc(args: ref seq[Object]): Object
   BuiltinObj* = ref object of Object
     fn*: BuiltinFunction
 
   ArrayObj* = ref object of Object
-    elements*: seq[Object]
+    elements*: ref seq[Object]
 
   HashKey* = ref object of Object
     obj_type*: ObjectType
@@ -123,8 +123,8 @@ proc inspect*(obj: HashObj): string
 
 proc newEnv*(): Enviroment 
 proc newEncloseEnv*(outer: Enviroment): Enviroment
-proc get*(env: Enviroment, name: string): (Object, bool)
-proc set*(env: Enviroment, name: string, val: Object): Object
+proc getEnv*(env: Enviroment, name: string): (Object, bool)
+proc setEnv*(env: Enviroment, name: string, val: Object): void
 
 #----------------------------------------
 # Object proc
@@ -280,7 +280,7 @@ proc getType*(obj: ArrayObj):ObjectType =
 
 proc inspect*(obj: ArrayObj): string = 
   var elements: seq[string]
-  for element in obj.elements:
+  for element in obj.elements[]:
     elements.add(element.inspect())
 
   var str = "["
@@ -323,7 +323,7 @@ proc getEnv*(env: Enviroment, name: string): (Object, bool) =
   let existance = env.store.hasKey(name)
   if not existance and env.outer != nil:
     # return from outer scope
-    return env.outer.get(name)
+    return env.outer.getEnv(name)
   elif not existance and env.outer == nil:
     # return null when not exists variable
     return (NullObj(), existance)
@@ -331,6 +331,5 @@ proc getEnv*(env: Enviroment, name: string): (Object, bool) =
     # return from inner scope
     return (env.store[name], existance)
 
-proc setEnv*(env: Enviroment, name: string, val: Object): Object = 
+proc setEnv*(env: Enviroment, name: string, val: Object): void = 
   env.store[name] = val
-  return val

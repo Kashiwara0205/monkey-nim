@@ -1,6 +1,5 @@
 import ../ast/ast
 import ../obj/obj
-from strformat import fmt
 
 var
   NULL = Object( o_type: oNull, null_obj: NullObj())
@@ -24,8 +23,13 @@ proc evalStringInfixExpression(operator: string, left: Object, right: Object): O
 proc evalIfExpression(expression: IfExpression, env: Enviroment): Object
 proc isTruthy(obj: Object): bool
 proc evalIdentifier(node: Identifier, env: Enviroment): Object
-proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): seq[Object]
+proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): ref seq[Object]
 proc extendFunctionEnv(fn: FunctionObj, args: ref seq[Object]): Enviroment
+proc applyFunction(fn: Object, args: ref seq[Object]): Object
+proc unwrapReturnValue(obj: Object): Object
+proc evalIndexExpression(left: Object, index: Object): Object
+proc evalArrayIndexExpression(arr: Object, index: Object): Object
+proc evalBlockStatement(block_statement: BlockStatement, env: Enviroment): Object
 
 proc newError(): ErrorObj =
   return ErrorObj()
@@ -90,47 +94,72 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
     let function = FunctionLiteral(expression)
     let params = function.parameters
     let body = function.body
+    let function_obj = FunctionObj(parameters: params, env: env, body: body)
 
-    return FunctionObj(parameters: params, env: env, body: body)
+    return Object(o_type: oFunction, function_obj: function_obj)
   of eCallExpression:
     let call = CallExpression(expression)
     let function = evalExpression(call.function, env)
     if isError(function): return function
 
-    let args = evalExpressions(call.arguments, env)
+    let ref_args = evalExpressions(call.arguments, env)
+    let args = ref_args[]
     if args.len == 1 and isError(args[0]): return args[0]
 
-    return applyFunction(function, args)
+    return applyFunction(function, ref_args)
   of eStringLiteral:
-    return Object()
+    let string_obj = StringObj(value: StringLiteral(expression).value)
+
+    return Object(o_type: oString, string_obj: string_obj)
   of eArrayLiteral:
-    return Object()
+    let arrayliteral =  ArrayLiteral(expression)
+    let elements = evalExpressions(arrayliteral.elements, env)
+
+    if elements[].len == 1 and isError(elements[][0]): return elements[0]
+
+    return Object(o_type: oArray, array_obj: ArrayObj(elements: elements))
   of eIndexExpression:
-    return Object()
+    let index_expression = IndexExpression(expression)
+    let left = evalExpression(index_expression.left, env)
+    if isError(left): return left
+
+    let index = evalExpression(index_expression.index, env)
+    if isError(index): return index
+
+    return evalIndexExpression(left, index)
   of eHashLiteral:
+    # later implement
     return Object()
 
-proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): seq[Object] =
-  var objects: seq[Object]
+proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): ref seq[Object] =
+  var objects: ref seq[Object]
+  objects.new
+  objects[] = @[]
 
   for expression in expressions[]:
     let evaluted = evalExpression(expression, env)
 
     if isError(evaluted): 
-      var error: seq[Object]
-      error.add(evaluted)
+      var error: ref seq[Object]
+      error.new
+      error[] = @[]
+      error[].add(evaluted)
       return error
 
-    objects.add(evaluted)
+    objects[].add(evaluted)
 
   return objects
 
-proc applyFunction(fn: Object, args: ref seq[Expression]): Object =
+proc applyFunction(fn: Object, args: ref seq[Object]): Object =
   case fn.o_type
   of oFunction:
-    let extendEnv = extendFunctionEnv()
+    let function = FunctionObj(fn)
+    let extendEnv = extendFunctionEnv(function, args)
+    let evaluted = evalStatement(function.body, extendEnv)
+    return unwrapReturnValue(evaluted)
   of oBuiltin:
-
+    let builtin = BuiltinObj(fn)
+    return builtin.fn(args)
   else: 
     return newError()
 
@@ -139,7 +168,7 @@ proc extendFunctionEnv(fn: FunctionObj, args: ref seq[Object]): Enviroment =
 
   var count: int = 0
   for param in fn.parameters[]:
-    env = env.setEnv(param.variable_name, args[count])
+    env.setEnv(param.variable_name, args[count])
     count = count + 1
 
   return env
@@ -147,13 +176,24 @@ proc extendFunctionEnv(fn: FunctionObj, args: ref seq[Object]): Enviroment =
 proc evalStatement(statement: Statement, env: Enviroment): Object =
   case statement.s_type:
   of sLetStatement:
-    return Object()
+    let let_statement = LetStatement(statement)
+    let val = evalExpression(let_statement.expression, env)
+
+    if isError(val): return val
+    env.setEnv(let_statement.name.variable_name, val)
+
+    return val
   of sExpressionStatement:
     return evalExpression(ExpressionStatement(statement).expression, env)
   of sBlockStatement:
-    return Object()
+    let block_statement = BlockStatement(statement)
+
+    return evalBlockStatement(block_statement, env)
   of sReturnStatement:
-    return Object()
+    let return_val = evalExpression(ReturnStatement(statement).expression, env)
+
+    if isError(return_val): return return_val
+    return Object(o_type: oReturnValue, return_value_obj: ReturnValueObj(value: return_val))
 
 proc convNativeBoolToBoolObj(input: bool): BooleanObj =
   return if input : TRUE.boolean_obj else : FALSE.boolean_obj
@@ -258,7 +298,7 @@ proc isTruthy(obj: Object): bool =
     return true
 
 proc evalIdentifier(node: Identifier, env: Enviroment): Object =
-  let res = env.get(node.variable_name)
+  let res = env.getEnv(node.variable_name)
   let obj = res[0]
   let existance = res[1]
 
@@ -266,11 +306,35 @@ proc evalIdentifier(node: Identifier, env: Enviroment): Object =
 
   return newError()
 
-#[
-proc evalExpression(expressions: seq[Expression], env: Enviroment): seq[Object] =
-  var objects: seq[Object]
-  for expression in expressions:
+proc unwrapReturnValue(obj: Object): Object =
+  if obj.o_type == oReturnValue:
+    return ReturnValueObj(obj).value
 
+  return obj
 
-  return objects
-]#
+proc evalIndexExpression(left: Object, index: Object): Object =
+  if left.o_type == oArray and index.o_type == oInteger:
+    return evalArrayIndexExpression(left, index)
+
+  return newError()
+
+proc evalArrayIndexExpression(arr: Object, index: Object): Object =
+  let array_object = ArrayObj(arr)
+  let idx = IntegerObj(index).value
+  let max = array_object.elements[].len
+  if idx < 0 or idx > max: return NULL
+
+  return array_object.elements[idx]
+
+proc exists_return_obj(obj: Object): bool =
+  return obj != nil and obj.o_type == oReturnValue or obj.o_type == oError
+
+proc evalBlockStatement(block_statement: BlockStatement, env: Enviroment): Object =
+  var obj: Object
+
+  for statement in block_statement.statements:
+    obj = evalStatement(statement, env)
+
+    if exists_return_obj(obj): return obj
+
+  return obj

@@ -4,6 +4,7 @@ all:
 	nim compile ast/ast.nim
 	nim compile parser/parser.nim
 	nim compile obj/obj.nim
+	nim compile evaluator/evaluator.nim
 	nim compile token/minitest.nim
 	nim compile lexer/minitest.nim
 	nim compile parser/minitest.nim

@@ -8,7 +8,7 @@ type
     nExpression
     nStatement
     nProgram
-type 
+type
   ExpressionType* = enum
     eIdentifier
     eBoolean
@@ -30,7 +30,7 @@ type
     sExpressionStatement
     sBlockStatement
 
-type 
+type
   Node* = ref object of RootObj
     case n_type*: NodeType
     of nProgram:
@@ -159,7 +159,7 @@ type
 
   Statement* = ref object of RootObj
     case s_type*: StatementType
-    of sLetStatement: 
+    of sLetStatement:
     letStmt* : LetStatement
     of sReturnStatement:
     returnStmt* : ReturnStatement
@@ -252,7 +252,7 @@ proc getTokenLiteral*(statement: ExpressionStatement): string
 proc getValue*(statement: ExpressionStatement): string
 
 proc getTokenLiteral*(statement: BlockStatement): string
-proc getValue*(statement: BlockStatement): string 
+proc getValue*(statement: BlockStatement): string
 
 #----------------------------------------
 # Node proc
@@ -358,7 +358,7 @@ proc hash*(literal: Expression): Hash =
 #----------------------------------------
 proc getTokenLiteral*(statement: Statement): string =
   case statement.s_type
-  of sLetStatement: 
+  of sLetStatement:
     return statement.letStmt.getTokenLiteral
   of sReturnStatement:
     return statement.returnStmt.getTokenLiteral
@@ -369,7 +369,7 @@ proc getTokenLiteral*(statement: Statement): string =
 
 proc getValue*(statement: Statement): string =
   case statement.s_type
-  of sLetStatement: 
+  of sLetStatement:
     return statement.letStmt.getValue
   of sReturnStatement:
     return statement.returnStmt.getValue

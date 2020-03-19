@@ -2,6 +2,8 @@ import ../token/token
 import ../ast/ast
 import ../lexer/lexer
 import ../parser/parser
+import ../evaluator/evaluator
+import ../obj/obj
 
 # prepare error handling
 var
@@ -12,6 +14,12 @@ proc get_program*(input: string): ast.Program =
   let lex = lexer.newLexer(input)
   let p = lex.newParser()
   return p.parseProgram().program
+
+proc get_eval*(input: string): Object =
+  let program = Node(n_type: nProgram, program: get_program(input))
+  let env = newEnv()
+
+  return evaluator.eval(program, env)
 
 proc output_testname*(testname: string): void =
   echo "+-+-+-+-+-+-+-+-+-+"
@@ -34,7 +42,7 @@ proc eq_value_with_testname*(testname: string, expected: any, val: any): void =
     e.msg = "Failure"
     output_failure_result(expected, val)
     raise e
-    
+
 proc eq_value*(expected: any, val: any): void =
   if(expected == val):
     echo "=> PASS"

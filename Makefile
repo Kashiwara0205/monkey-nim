@@ -26,7 +26,7 @@ init:
 	nim compile parser/minitest.nim
 	nim compile test_utils/test_utils.nim
 
-compile: 
+compile:
 	nim compile --run token/token.nim
 	nim compile --run lexer/lexer.nim
 	nim compile --run ast/ast.nim
@@ -45,6 +45,9 @@ token_test:
 
 parser_test:
 	nim compile --run parser/minitest.nim
+
+eval_test:
+	nim compile --run evaluator/minitest.nim
 
 tmp:
 	nim compile --run parser/parser.nim

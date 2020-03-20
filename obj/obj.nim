@@ -130,8 +130,6 @@ proc setEnv*(env: Enviroment, name: string, val: Object): void
 # Object proc
 #----------------------------------------
 proc getType*(obj: Object):ObjectType =
-  echo "ININ"
-  echo obj.o_type
   case obj.o_type
   of oInteger:
     return obj.integer_obj.getType()

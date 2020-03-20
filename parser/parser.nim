@@ -218,6 +218,10 @@ proc parseReturnStatement*(parser: Parser): Node =
   parser.nextToken()
   statement.expression = parser.parseExpression(LOWSET).expression
   while not parser.curTokenIs(token.SEMICOLON):
+    if parser.curTokenIS(token.EOF):
+      parser.errors.add("can't return")
+      return nil
+
     parser.nextToken()
 
   return Node(n_type: nStatement, statement: Statement(s_type: sReturnStatement, returnStmt: statement) )

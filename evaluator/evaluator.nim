@@ -54,7 +54,7 @@ proc evalProgram(program: Program, env: Enviroment): Object =
     obj = eval(statement, env)
     case obj.o_type
     of oReturnValue:
-      return ReturnValueObj(obj).value
+      return obj.return_value_obj.value
     of oError:
       return obj
     else:

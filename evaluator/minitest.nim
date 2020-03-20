@@ -249,3 +249,38 @@ block if_expression_test:
   obj = test.get_eval(input)
   test.eq_value(oInteger, obj.o_type)
   test.eq_value("10", obj.inspect)
+
+# outline: whether correct get return statement val
+# expected_value: expected number
+block return_statement_test:
+  var input = "return 10;"
+  var obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)
+
+  input = "return 10; 9;"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)
+
+  input = "return 2 * 5;"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)
+
+  input = "9; return 10;"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)
+
+  input = """
+  if(10 > 1){
+    if(10 > 1){
+      return 10;
+    }
+    return 1;
+  }
+  """
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)

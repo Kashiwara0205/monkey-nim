@@ -157,7 +157,7 @@ proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): ref seq
 proc applyFunction(fn: Object, args: ref seq[Object]): Object =
   case fn.o_type
   of oFunction:
-    let function = FunctionObj(fn)
+    let function = fn.function_obj
     let extendEnv = extendFunctionEnv(function, args)
     let evaluted = evalStatement(function.body, extendEnv)
     return unwrapReturnValue(evaluted)
@@ -330,7 +330,7 @@ proc evalIdentifier(node: Identifier, env: Enviroment): Object =
 
 proc unwrapReturnValue(obj: Object): Object =
   if obj.o_type == oReturnValue:
-    return ReturnValueObj(obj).value
+    return obj.return_value_obj.value
 
   return obj
 

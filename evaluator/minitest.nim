@@ -1,4 +1,3 @@
-import evaluator
 import ../obj/obj
 import ../test_utils/test_utils as test
 
@@ -307,3 +306,31 @@ block let_statement_test:
   obj = test.get_eval(input)
   test.eq_value(oInteger, obj.o_type)
   test.eq_value("50", obj.inspect)
+
+# outline: whether correct get function test
+# expected_value: expected number
+block func_application_test:
+  var input = "let identify = fn(x){x;} identify(5);"
+  var obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("5", obj.inspect)
+
+  input = "let identify = fn(x){ return x;} let a = identify(5); a;"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("5", obj.inspect)
+
+  input = "let double = fn(x){ x * 2;} double(5);"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)
+
+  input = "let add = fn(x, y){ x + y;} add(5, 5);"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)
+
+  input = "fn(x){ x; }(5)"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("5", obj.inspect)

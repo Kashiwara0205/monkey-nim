@@ -307,7 +307,7 @@ block let_statement_test:
   test.eq_value(oInteger, obj.o_type)
   test.eq_value("50", obj.inspect)
 
-# outline: whether correct get function test
+# outline: whether correct get function val
 # expected_value: expected number
 block func_application_test:
   var input = "let identify = fn(x){x;} identify(5);"
@@ -334,3 +334,16 @@ block func_application_test:
   obj = test.get_eval(input)
   test.eq_value(oInteger, obj.o_type)
   test.eq_value("5", obj.inspect)
+
+# outline: whether correct get string val
+# expected_value: expected number
+block string_test:
+  var input = "\"a\""
+  var obj = test.get_eval(input)
+  test.eq_value(oString, obj.o_type)
+  test.eq_value("a", obj.inspect)
+
+  input = "\"a\" + \"i\""
+  obj = test.get_eval(input)
+  test.eq_value(oString, obj.o_type)
+  test.eq_value("ai", obj.inspect)

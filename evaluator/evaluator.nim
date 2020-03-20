@@ -294,8 +294,9 @@ proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): 
 proc evalStringInfixExpression(operator: string, left: Object, right: Object): Object =
   if operator != "+" : return newError()
 
-  let combine = StringObj(left).value & StringObj(right).value
-  return StringObj(value: combine)
+  let combine = left.string_obj.value & right.string_obj.value
+  let string_obj = StringObj(value: combine)
+  return Object(o_type: oString, string_obj: string_obj)
 
 proc isTruthy(obj: Object): bool =
   case obj.o_type

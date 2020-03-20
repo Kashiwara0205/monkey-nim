@@ -242,7 +242,7 @@ proc evalInfixExpression(operator: string, left: Object, right: Object): Object 
 proc evalBangOperatorExpression(right: Object): Object =
   case right.o_type
   of oBoolean:
-    case BooleanObj(right).value
+    case right.boolean_obj.value
       of true: return FALSE
       of false: return TRUE
   of oNull:

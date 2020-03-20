@@ -179,3 +179,36 @@ block boolean_expression_test:
   obj = test.get_eval(input)
   test.eq_value(oBoolean, obj.o_type)
   test.eq_value("false", obj.inspect)
+
+# outline: whether correct get bang operater val
+# expected_value: expected boolean
+block bang_operator_test:
+  var input = "!true"
+  var obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "!false"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "!5"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "!!true"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "!!false"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "!!5"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)

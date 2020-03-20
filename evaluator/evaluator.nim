@@ -68,14 +68,13 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
     let integer_obj = IntegerObj(value: expression.integerLit.number)
     return Object(o_type: oInteger, integer_obj: integer_obj)
   of eBoolean:
-
-    return convNativeBoolToBoolObj(Boolean(expression).value)
+    let boolean_obj = convNativeBoolToBoolObj(expression.boolean.value)
+    return Object(o_type: oBoolean, boolean_obj: boolean_obj)
   of ePrefixExpression:
     let prefix = expression.prefixExp
-
     let right = evalExpression(prefix.right, env)
-    if isError(right): return right
 
+    if isError(right): return right
     return evalPrefixExpression(prefix.operator, right)
   of eInfixExpression:
     let infix = expression.infixExp
@@ -221,8 +220,21 @@ proc is_left_and_right_string(left: Object, right: Object): bool=
 proc evalInfixExpression(operator: string, left: Object, right: Object): Object =
   if is_left_and_right_integer(left, right): return evalIntegerInfixExpression(operator, left, right)
   if is_left_and_right_string(left, right): return evalStringInfixExpression(operator, left, right)
-  if operator == "==": return convNativeBoolToBoolObj(left == right)
-  if operator == "!=": return convNativeBoolToBoolObj(left != right)
+
+  if operator == "==": 
+    let left_val = left.boolean_obj.value
+    let right_val = right.boolean_obj.value
+    let boolean_obj = convNativeBoolToBoolObj(left_val == right_val)
+
+    return Object(o_type: oBoolean, boolean_obj: boolean_obj)
+
+  if operator == "!=":
+    let left_val = left.boolean_obj.value
+    let right_val = right.boolean_obj.value
+    let boolean_obj = convNativeBoolToBoolObj(left_val != right_val)
+
+    return  Object(o_type: oBoolean, boolean_obj: boolean_obj)
+
   if left.o_type != right.o_type: return newError()
 
   return newError()
@@ -263,13 +275,17 @@ proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): 
     let integer_obj = IntegerObj(value: (int(leftVal) / int(rightVal)).toInt)
     return Object(o_type: oInteger, integer_obj: integer_obj)
   of "<":
-    return convNativeBoolToBoolObj(leftVal < rightVal)
+    let boolean_obj = convNativeBoolToBoolObj(leftVal < rightVal)
+    return Object(o_type: oBoolean, boolean_obj: boolean_obj)
   of ">":
-    return convNativeBoolToBoolObj(leftVal > rightVal)
+    let boolean_obj = convNativeBoolToBoolObj(leftVal > rightVal)
+    return Object(o_type: oBoolean, boolean_obj: boolean_obj)
   of "==":
-    return convNativeBoolToBoolObj(leftVal == rightVal)
+    let boolean_obj = convNativeBoolToBoolObj(leftVal == rightVal)
+    return Object(o_type: oBoolean, boolean_obj: boolean_obj)
   of "!=":
-    return convNativeBoolToBoolObj(leftVal != rightVal)
+    let boolean_obj = convNativeBoolToBoolObj(leftVal != rightVal)
+    return Object(o_type: oBoolean, boolean_obj: boolean_obj)
   else:
     return newError()
 

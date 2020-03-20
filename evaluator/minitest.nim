@@ -2,7 +2,7 @@ import evaluator
 import ../obj/obj
 import ../test_utils/test_utils as test
 
-# execute lexer test
+# execute evaluator test
 
 # outline: whether correct get integer expression val
 # expected_value: caliculated val
@@ -81,3 +81,101 @@ block integer_expression_test:
   obj = test.get_eval(input)
   test.eq_value(oInteger, obj.o_type)
   test.eq_value("50", obj.inspect)
+
+# outline: whether correct get boolean expression val
+# expected_value: expected boolean
+block boolean_expression_test:
+  var input = "true"
+  var obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "false"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "1 < 2"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "1 > 2"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "1 < 1"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "1 > 1"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "1 == 1"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "1 != 1"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "1 == 2"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "1 != 2"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "true == true"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "false == false"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "true == false"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "true != false"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "false != true"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "(1 < 2) == true"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "(1 < 2) == false"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)
+
+  input = "(1 > 2) == false"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("true", obj.inspect)
+
+  input = "(1 > 2) == true"
+  obj = test.get_eval(input)
+  test.eq_value(oBoolean, obj.o_type)
+  test.eq_value("false", obj.inspect)

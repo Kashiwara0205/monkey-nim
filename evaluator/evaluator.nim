@@ -180,11 +180,10 @@ proc extendFunctionEnv(fn: FunctionObj, args: ref seq[Object]): Enviroment =
 proc evalStatement(statement: Statement, env: Enviroment): Object =
   case statement.s_type:
   of sLetStatement:
-    let let_statement = LetStatement(statement)
-    let val = evalExpression(let_statement.expression, env)
+    let val = evalExpression(statement.letStmt.expression, env)
 
     if isError(val): return val
-    env.setEnv(let_statement.name.variable_name, val)
+    env.setEnv(statement.letStmt.name.variable_name, val)
 
     return val
   of sExpressionStatement:

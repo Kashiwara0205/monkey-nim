@@ -284,3 +284,26 @@ block return_statement_test:
   obj = test.get_eval(input)
   test.eq_value(oInteger, obj.o_type)
   test.eq_value("10", obj.inspect)
+
+# outline: whether correct get let statement val
+# expected_value: expected number
+block let_statement_test:
+  var input = "let a = 5; a;"
+  var obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("5", obj.inspect)
+
+  input = "let a = 5 * 5; a;"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("25", obj.inspect)
+
+  input = "let a = 5 * 5; let b = a; b;"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("25", obj.inspect)
+
+  input = "let a = 5 * 5; let b = a; let c = a + b; c;"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("50", obj.inspect)

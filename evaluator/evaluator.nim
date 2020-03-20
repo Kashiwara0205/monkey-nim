@@ -40,16 +40,18 @@ proc isError(obj: Object): bool =
 proc eval*(node: Node, env: Enviroment): Object =
   case node.n_type
   of nProgram:
-    return evalProgram(node.program, env)
+    let obj = evalProgram(node.program, env)
+    return obj
   of nExpression:
     return evalExpression(node.expression, env)
   of nStatement:
-    echo "IN"
-    return evalStatement(node.statement, env)
+    let obj = evalStatement(node.statement, env)
+    return obj
 
 proc evalProgram(program: Program, env: Enviroment): Object =
+  var obj: Object
   for statement in program.statements:
-    let obj = eval(statement, env)
+    obj = eval(statement, env)
     case obj.o_type
     of oReturnValue:
       return ReturnValueObj(obj).value
@@ -58,11 +60,12 @@ proc evalProgram(program: Program, env: Enviroment): Object =
     else:
       discard
 
+  return obj
+
 proc evalExpression(expression: Expression, env: Enviroment): Object =
   case expression.e_type:
   of eIntegerLiteral:
-    let integer_obj =  IntegerObj(value: expression.integerLit.number)
-
+    let integer_obj = IntegerObj(value: expression.integerLit.number)
     return Object(o_type: oInteger, integer_obj: integer_obj)
   of eBoolean:
 
@@ -186,7 +189,8 @@ proc evalStatement(statement: Statement, env: Enviroment): Object =
 
     return val
   of sExpressionStatement:
-    return evalExpression(statement.expressionStmt.expression, env)
+    let obj = evalExpression(statement.expressionStmt.expression, env)
+    return obj
   of sBlockStatement:
 
     return evalBlockStatement(statement.blockStmt, env)
@@ -237,14 +241,13 @@ proc evalBangOperatorExpression(right: Object): Object =
 proc evalMinusPrefixOperatorExpression(right: Object): Object =
   if right.o_type != oInteger:
     return newError()
-
-  let value = IntegerObj(right).value
-
-  return IntegerObj(value: -value)
+  let value = right.integer_obj.value
+  let integer_obj = IntegerObj(value: -value)
+  return Object(o_type: oInteger, integer_obj: integer_obj)
 
 proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): Object =
-  let leftVal = IntegerObj(left).value
-  let rightVal = IntegerObj(right).value
+  let leftVal = left.integer_obj.value
+  let rightVal = right.integer_obj.value
 
   case operator
   of "+":

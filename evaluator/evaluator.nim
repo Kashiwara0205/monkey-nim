@@ -1,14 +1,21 @@
+
 import ../ast/ast
 import ../obj/obj
+import tables
 
 var
   NULL = Object( o_type: oNull, null_obj: NullObj())
   TRUE = Object( o_type: oBoolean, boolean_obj: BooleanObj(value: true))
   FALSE = Object( o_type: oBoolean, boolean_obj: BooleanObj(value: false))
 
-# forward declaration
-proc newError(): ErrorObj
+# errors
+proc newError*(): ErrorObj
 proc isError(obj: Object): bool
+
+# buildins
+proc len(args: ref seq[Object]): Object
+
+# eval
 proc evalProgram(program: Program, env: Enviroment): Object
 proc eval*(node: Node, env: Enviroment): Object
 proc evalExpression(expression: Expression, env: Enviroment): Object
@@ -31,7 +38,11 @@ proc extendFunctionEnv(fn: FunctionObj, args: ref seq[Object]): Enviroment
 proc applyFunction(fn: Object, args: ref seq[Object]): Object
 proc unwrapReturnValue(obj: Object): Object
 
-proc newError(): ErrorObj =
+# set buildin function
+var builtins = initTable[string, Object]()
+builtins["len"] = Object(o_type: oBuiltin, builtin_obj: BuiltinObj(fn: len))
+
+proc newError*(): ErrorObj =
   return ErrorObj()
 
 proc isError(obj: Object): bool =
@@ -162,7 +173,7 @@ proc applyFunction(fn: Object, args: ref seq[Object]): Object =
     let evaluted = evalStatement(function.body, extendEnv)
     return unwrapReturnValue(evaluted)
   of oBuiltin:
-    let builtin = BuiltinObj(fn)
+    let builtin = fn.builtin_obj
     return builtin.fn(args)
   else:
     return newError()
@@ -323,9 +334,12 @@ proc evalIfExpression(expression: IfExpression, env: Enviroment): Object =
 proc evalIdentifier(node: Identifier, env: Enviroment): Object =
   let res = env.getEnv(node.variable_name)
   let obj = res[0]
-  let existance = res[1]
+  var existance = res[1]
 
   if existance: return obj
+
+  existance = builtins.hasKey(node.variable_name)
+  if existance: return builtins[node.variable_name]
 
   return newError()
 
@@ -361,3 +375,17 @@ proc evalBlockStatement(block_statement: BlockStatement, env: Enviroment): Objec
     if exists_return_obj(obj): return obj
 
   return obj
+
+# buildin functions
+proc len(args: ref seq[Object]): Object =
+  if args[].len != 1: return newError()
+  let obj = args[][0]
+  case obj.o_type
+  of oArray:
+    let integer_obj = IntegerObj(value: obj.array_obj.elements[].len)
+    return Object(o_type: oInteger, integer_obj: integer_obj)
+  of oString:
+    let integer_obj = IntegerObj(value: obj.string_obj.value.len)
+    return Object(o_type: oInteger, integer_obj: integer_obj)
+  else:
+    discard

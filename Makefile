@@ -47,6 +47,8 @@ parser_test:
 	nim compile --run parser/minitest.nim
 
 eval_test:
+	nim compile ast/ast.nim
+	nim compile parser/parser.nim
 	nim compile --run evaluator/minitest.nim
 
 tmp:

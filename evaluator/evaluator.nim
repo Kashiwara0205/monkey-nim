@@ -191,8 +191,11 @@ proc evalStatement(statement: Statement, env: Enviroment): Object =
     let obj = evalExpression(statement.expressionStmt.expression, env)
     return obj
   of sBlockStatement:
-
-    return evalBlockStatement(statement.blockStmt, env)
+    # following property is BlockStatement type 
+    # but use this process, so need cast converion Statement to BlockStatement
+    # IfExpression: consequence, alternative
+    # FunctionLiteral: body
+    return evalBlockStatement(BlockStatement(statement), env)
   of sReturnStatement:
     let return_val = evalExpression(statement.returnStmt.expression, env)
 
@@ -300,7 +303,7 @@ proc isTruthy(obj: Object): bool =
   of oNull:
     return false
   of oBoolean:
-    return BooleanObj(obj).value
+    return obj.boolean_obj.value
   else:
     return true
 

@@ -3,9 +3,8 @@ import ../obj/obj
 import ../test_utils/test_utils as test
 
 # execute evaluator test
-
 # outline: whether correct get integer expression val
-# expected_value: caliculated val
+# expected_value: caliculated number
 block integer_expression_test:
   var input = "5"
   var obj = test.get_eval(input)
@@ -212,3 +211,41 @@ block bang_operator_test:
   obj = test.get_eval(input)
   test.eq_value(oBoolean, obj.o_type)
   test.eq_value("true", obj.inspect)
+
+# outline: whether correct get if else expression val
+# expected_value: expected number or nil
+block if_expression_test:
+  var input = "if (true) { 10 }"
+  var obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)
+
+  input = "if (false) { 10 }"
+  obj = test.get_eval(input)
+  test.eq_value(oNull, obj.o_type)
+  test.eq_value("null", obj.inspect)
+
+  input = "if (1) { 10 }"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)
+
+  input = "if (1 < 2) { 10 }"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)
+
+  input = "if (1 > 2) { 10 }"
+  obj = test.get_eval(input)
+  test.eq_value(oNull, obj.o_type)
+  test.eq_value("null", obj.inspect)
+
+  input = "if (1 > 2) { 10 } else { 20 }"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("20", obj.inspect)
+
+  input = "if (1 < 2) { 10 } else { 20 }"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)

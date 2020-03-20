@@ -159,14 +159,20 @@ type
 
   Statement* = ref object of RootObj
     case s_type*: StatementType
-    of sLetStatement:
-    letStmt* : LetStatement
-    of sReturnStatement:
-    returnStmt* : ReturnStatement
-    of sExpressionStatement:
-    expressionStmt* : ExpressionStatement
     of sBlockStatement:
-    blockStmt* : BlockStatement
+      blockStmt* : BlockStatement  
+    of sLetStatement:
+      letStmt* : LetStatement
+    of sReturnStatement:
+      returnStmt* : ReturnStatement
+    of sExpressionStatement:
+      expressionStmt* : ExpressionStatement
+
+  # This type used by following program
+  # [{ }]
+  BlockStatement* = ref object of Statement
+    tok*: token.Token
+    statements* :seq[Statement]
 
   # This type used by following program
   # [let a = 5;]
@@ -174,12 +180,6 @@ type
     tok*: token.Token
     name*: Identifier
     expression*: Expression
-
-  # This type used by following program
-  # [{ }]
-  BlockStatement* = ref object of Statement
-    tok*: token.Token
-    statements* :seq[Statement]
 
   # This type used by following program
   # [value;]

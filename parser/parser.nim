@@ -240,7 +240,7 @@ proc parseStatement*(parser: Parser): Node =
     return parser.parseExpressionStatement()
 
 proc parseBlockStatement*(parser: Parser): Node =
-  var block_statement = BlockStatement(tok: parser.curToken)
+  var block_statement = BlockStatement(s_type: sBlockStatement, tok: parser.curToken)
   block_statement.statements = @[]
 
   parser.nextToken()

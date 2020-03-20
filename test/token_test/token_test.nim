@@ -1,5 +1,5 @@
-import token
-import ../test_utils/test_utils as test
+import ../../src/token/token
+import ../test_helper/test_helper as test
 
 # execute token test
 

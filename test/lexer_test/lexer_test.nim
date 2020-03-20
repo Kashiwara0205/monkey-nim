@@ -1,5 +1,5 @@
-import lexer
-import ../test_utils/test_utils as test
+import ../../src/lexer/lexer
+import ../test_helper/test_helper as test
 
 # execute lexer test
 

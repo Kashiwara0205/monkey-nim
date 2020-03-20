@@ -1,5 +1,5 @@
-import ../ast/ast
-import ../test_utils/test_utils as test
+import ../../src/ast/ast
+import ../test_helper/test_helper as test
 
 # outline: whther be able to parse let
 # expected_value: expected let statement

@@ -1,9 +1,9 @@
-import ../token/token
-import ../ast/ast
-import ../lexer/lexer
-import ../parser/parser
-import ../evaluator/evaluator
-import ../obj/obj
+import ../../src/token/token
+import ../../src/ast/ast
+import ../../src/lexer/lexer
+import ../../src/parser/parser
+import ../../src/evaluator/evaluator
+import ../../src/obj/obj
 
 # prepare error handling
 var

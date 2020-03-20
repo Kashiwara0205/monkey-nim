@@ -356,12 +356,11 @@ proc evalIndexExpression(left: Object, index: Object): Object =
   return newError()
 
 proc evalArrayIndexExpression(arr: Object, index: Object): Object =
-  let array_object = ArrayObj(arr)
-  let idx = IntegerObj(index).value
-  let max = array_object.elements[].len
+  let idx = index.integer_obj.value
+  let max = arr.array_obj.elements[].len - 1
   if idx < 0 or idx > max: return NULL
 
-  return array_object.elements[idx]
+  return arr.array_obj.elements[idx]
 
 proc exists_return_obj(obj: Object): bool =
   return obj != nil and obj.o_type == oReturnValue or obj.o_type == oError

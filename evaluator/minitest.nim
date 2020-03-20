@@ -348,6 +348,71 @@ block string_test:
   test.eq_value(oString, obj.o_type)
   test.eq_value("ai", obj.inspect)
 
+# outline: whether correct array index expression val
+# expected_value: expected number
+block array_index_expression_test:
+  var input = "[1, 2, 3][0]"
+  var obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("1", obj.inspect)
+
+  input = "[1, 2, 3][1]"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("2", obj.inspect)
+
+  input = "[1, 2, 3][2]"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("3", obj.inspect)
+
+  input = "[1, 2, 3][1 + 1]"
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("3", obj.inspect)
+
+  input = """
+    let arr = [1, 2, 3];
+    arr[0]
+  """
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("1", obj.inspect)
+
+  input = """
+    let arr = [1, 2, 3];
+    arr[1]
+  """
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("2", obj.inspect)
+
+  input = """
+    let arr = [1, 2, 3];
+    arr[2]
+  """
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("3", obj.inspect)
+
+  input = """
+    let arr = [1, 2, 3];
+    arr[0] + arr[1] + arr[2]
+  """
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("6", obj.inspect)
+
+  input = "[1, 2, 3][3]"
+  obj = test.get_eval(input)
+  test.eq_value(oNull, obj.o_type)
+  test.eq_value("null", obj.inspect)
+
+  input = "[1, 2, 3][-1]"
+  obj = test.get_eval(input)
+  test.eq_value(oNull, obj.o_type)
+  test.eq_value("null", obj.inspect)
+
 # outline: whether correct buildin function val
 # expected_value: expected number
 block buildin_function_test:
@@ -360,3 +425,11 @@ block buildin_function_test:
   obj = test.get_eval(input)
   test.eq_value(oInteger, obj.o_type)
   test.eq_value("4", obj.inspect)
+
+  input = """
+    let arr = [1, 2, 3];
+    len(arr)
+  """
+  obj = test.get_eval(input)
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("3", obj.inspect)

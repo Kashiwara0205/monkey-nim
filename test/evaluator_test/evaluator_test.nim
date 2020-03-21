@@ -348,7 +348,7 @@ block string_test:
   test.eq_value(oString, obj.o_type)
   test.eq_value("ai", obj.inspect)
 
-# outline: whether correct array index expression val
+# outline: whether correct get array index expression val
 # expected_value: expected number
 block array_index_expression_test:
   var input = "[1, 2, 3][0]"
@@ -412,3 +412,46 @@ block array_index_expression_test:
   obj = test.get_eval(input)
   test.eq_value(oNull, obj.o_type)
   test.eq_value("null", obj.inspect)
+
+# outline: whether correct get error handling val
+# expected_value: expected number
+block error_handling_test:
+  var input = "5 + true"
+  var obj = test.get_eval(input)
+  test.eq_value(oError, obj.o_type)
+  test.eq_value("Error: type mismatch: oInteger + oBoolean", obj.inspect)
+
+  input = "5 + true; 5;"
+  obj = test.get_eval(input)
+  test.eq_value(oError, obj.o_type)
+  test.eq_value("Error: type mismatch: oInteger + oBoolean", obj.inspect)
+
+  input = "-true"
+  obj = test.get_eval(input)
+  test.eq_value(oError, obj.o_type)
+  test.eq_value("Error: unknown operator: -oBoolean", obj.inspect)
+
+  input = "true + false"
+  obj = test.get_eval(input)
+  test.eq_value(oError, obj.o_type)
+  test.eq_value("Error: unknown operator: oBoolean + oBoolean", obj.inspect)
+
+  input = "5; true + false; 5"
+  obj = test.get_eval(input)
+  test.eq_value(oError, obj.o_type)
+  test.eq_value("Error: unknown operator: oBoolean + oBoolean", obj.inspect)
+
+  input = "if (10 > 1) { true + false; }"
+  obj = test.get_eval(input)
+  test.eq_value(oError, obj.o_type)
+  test.eq_value("Error: unknown operator: oBoolean + oBoolean", obj.inspect)
+
+  input = "foobar"
+  obj = test.get_eval(input)
+  test.eq_value(oError, obj.o_type)
+  test.eq_value("Error: identifier not found: foobar", obj.inspect)
+
+  input = "\"str\" - \"str\""
+  obj = test.get_eval(input)
+  test.eq_value(oError, obj.o_type)
+  test.eq_value("Error: unknown operator: oString - oString", obj.inspect)

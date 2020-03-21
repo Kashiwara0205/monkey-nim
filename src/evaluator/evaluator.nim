@@ -2,17 +2,18 @@
 import ../ast/ast
 import ../obj/obj
 import tables
+from strformat import fmt
 
 var
   NULL = Object( o_type: oNull, null_obj: NullObj())
   TRUE = Object( o_type: oBoolean, boolean_obj: BooleanObj(value: true))
   FALSE = Object( o_type: oBoolean, boolean_obj: BooleanObj(value: false))
 
-# errors
-proc newError*(): ErrorObj
+# error
+proc newError*(message: string): Object
 proc isError(obj: Object): bool
 
-# buildins
+# buildin
 proc len(args: ref seq[Object]): Object
 
 # eval
@@ -42,8 +43,8 @@ proc unwrapReturnValue(obj: Object): Object
 var builtins = initTable[string, Object]()
 builtins["len"] = Object(o_type: oBuiltin, builtin_obj: BuiltinObj(fn: len))
 
-proc newError*(): ErrorObj =
-  return ErrorObj()
+proc newError*(message: string): Object =
+  return Object(o_type: oError, error_obj: ErrorObj(message: message))
 
 proc isError(obj: Object): bool =
   return if obj != nil: obj.o_type == oError else: false
@@ -176,7 +177,7 @@ proc applyFunction(fn: Object, args: ref seq[Object]): Object =
     let builtin = fn.builtin_obj
     return builtin.fn(args)
   else:
-    return newError()
+    return newError(fmt"not a function: {$fn.o_type}")
 
 proc extendFunctionEnv(fn: FunctionObj, args: ref seq[Object]): Enviroment =
   var env = newEncloseEnv(fn.env)
@@ -222,7 +223,7 @@ proc evalPrefixExpression(operator: string, right: Object): Object =
   of "-":
     return evalMinusPrefixOperatorExpression(right)
   else:
-    return newError()
+    return newError(fmt"unknown operator: {operator} {$right.o_type}")
 
 proc is_left_and_right_integer(left: Object, right: Object): bool=
   return left.o_type == right.o_type and right.o_type == oInteger
@@ -248,9 +249,10 @@ proc evalInfixExpression(operator: string, left: Object, right: Object): Object 
 
     return  Object(o_type: oBoolean, boolean_obj: boolean_obj)
 
-  if left.o_type != right.o_type: return newError()
+  if left.o_type != right.o_type: 
+    return newError(fmt"type mismatch: {$left.o_type} {$operator} {$right.o_type}")
 
-  return newError()
+  return newError(fmt"unknown operator: {$left.o_type} {$operator} {$right.o_type}")
 
 proc evalBangOperatorExpression(right: Object): Object =
   case right.o_type
@@ -265,7 +267,7 @@ proc evalBangOperatorExpression(right: Object): Object =
 
 proc evalMinusPrefixOperatorExpression(right: Object): Object =
   if right.o_type != oInteger:
-    return newError()
+    return newError(fmt"unknown operator: -{$right.o_type}")
   let value = right.integer_obj.value
   let integer_obj = IntegerObj(value: -value)
   return Object(o_type: oInteger, integer_obj: integer_obj)
@@ -300,10 +302,10 @@ proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): 
     let boolean_obj = convNativeBoolToBoolObj(leftVal != rightVal)
     return Object(o_type: oBoolean, boolean_obj: boolean_obj)
   else:
-    return newError()
+    return newError(fmt"unknown operator: {$left.o_type} {operator} {$right.o_type}")
 
 proc evalStringInfixExpression(operator: string, left: Object, right: Object): Object =
-  if operator != "+" : return newError()
+  if operator != "+" : return newError(fmt"unknown operator: {$left.o_type} {operator} {$right.o_type}")
 
   let combine = left.string_obj.value & right.string_obj.value
   let string_obj = StringObj(value: combine)
@@ -341,7 +343,7 @@ proc evalIdentifier(node: Identifier, env: Enviroment): Object =
   existance = builtins.hasKey(node.variable_name)
   if existance: return builtins[node.variable_name]
 
-  return newError()
+  return newError(fmt"identifier not found: {node.variable_name}")
 
 proc unwrapReturnValue(obj: Object): Object =
   if obj.o_type == oReturnValue:
@@ -353,7 +355,7 @@ proc evalIndexExpression(left: Object, index: Object): Object =
   if left.o_type == oArray and index.o_type == oInteger:
     return evalArrayIndexExpression(left, index)
 
-  return newError()
+  return newError(fmt"index operator not supported: {left.o_type}")
 
 proc evalArrayIndexExpression(arr: Object, index: Object): Object =
   let idx = index.integer_obj.value
@@ -377,7 +379,9 @@ proc evalBlockStatement(block_statement: BlockStatement, env: Enviroment): Objec
 
 # buildin functions
 proc len(args: ref seq[Object]): Object =
-  if args[].len != 1: return newError()
+  if args[].len != 1: 
+    return newError(fmt"wrong number of arguments. got={$args[].len}, want=1")
+
   let obj = args[][0]
   case obj.o_type
   of oArray:
@@ -387,4 +391,4 @@ proc len(args: ref seq[Object]): Object =
     let integer_obj = IntegerObj(value: obj.string_obj.value.len)
     return Object(o_type: oInteger, integer_obj: integer_obj)
   else:
-    discard
+    return newError(fmt"argument to `len` not supported, got {$obj.o_type}")

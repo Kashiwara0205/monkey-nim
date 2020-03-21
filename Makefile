@@ -5,6 +5,7 @@ all:
 	nim compile src/parser/parser.nim
 	nim compile src/obj/obj.nim
 	nim compile src/evaluator/evaluator.nim
+	nim compile src/repl/repl.nim
 	nim compile test/test_helper/test_helper.nim
 	nim compile --run test/token_test/token_test.nim
 	nim compile --run test/lexer_test/lexer_test.nim
@@ -42,3 +43,6 @@ eval_test:
 
 buildin_test:
 	nim compile --run test/buildin_test/buildin_test.nim
+
+monkey:
+	src/repl/repl

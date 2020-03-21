@@ -32,6 +32,13 @@ init:
 	nim compile --run test/evaluator_test/evaluator_test.nim
 	nim compile --run test/buildin_test/buildin_test.nim
 
+monkey_test:
+	nim compile --run test/token_test/token_test.nim
+	nim compile --run test/lexer_test/lexer_test.nim
+	nim compile --run test/parser_test/parser_test.nim
+	nim compile --run test/evaluator_test/evaluator_test.nim
+	nim compile --run test/buildin_test/buildin_test.nim
+
 lexer_test:
 	nim compile --run test/lexer_test/lexer_test.nim
 

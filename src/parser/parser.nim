@@ -33,12 +33,12 @@ type Parser = ref object
   lex: lexer.Lexer
   curToken: token.Token
   peekToken: token.Token
-  errors: seq[string]
+  error: string
   prefixParseFns: Table[token.TokenType, proc(parser: Parser): Node]
   infixParseFns: Table[token.TokenType, proc(parser: Parser, left: Expression): Node]
 
 # forward declaration
-proc getErrors*(parser: Parser): seq[string]
+proc getError*(parser: Parser): string
 proc peekError*(parser: Parser, t_type: token.TokenType): void
 proc noPrefixPraseError*(parser: Parser, t_type: token.TokenType): void
 proc nextToken*(parser: Parser): void
@@ -72,14 +72,16 @@ proc parseArrayLiteral*(parser: Parser): Node
 proc parseIndexExpression*(parser: Parser, left: Expression): Node
 proc parseHashLiteral*(parser: Parser): Node
 
-proc getErrors*(parser: Parser): seq[string] =
-  return parser.errors
+proc getError*(parser: Parser): string =
+  return parser.error
 
 proc peekError*(parser: Parser, t_type: token.TokenType): void =
-  parser.errors.add("peekError...")
+  parser.error = "peekError"
+  raise
 
 proc noPrefixPraseError*(parser: Parser, t_type: token.TokenType): void =
-  parser.errors.add("noPrefixPraseError...")
+  parser.error = "noPrefixPraseError"
+  raise
 
 proc nextToken*(parser: Parser): void =
   parser.curToken = parser.peekToken
@@ -112,7 +114,7 @@ proc curPrecedence*(parser: Parser): Priority =
     return LOWSET
 
 proc newParser*(lex: lexer.Lexer): Parser =
-  var parser = Parser(lex: lex, errors: @[])
+  var parser = Parser(lex: lex, error: "")
   parser.prefixParseFns[token.IDENT] = parseIdentifier
   parser.prefixParseFns[token.INT] = parseIntegerLiteral
   parser.prefixParseFns[token.BANG] = parsePrefixExpression
@@ -143,19 +145,23 @@ proc newParser*(lex: lexer.Lexer): Parser =
   return parser
 
 proc parseProgram*(parser: Parser): Node =
-  var prgoram = Program()
+  try:
+    var prgoram = Program()
+    prgoram.statements = @[]
+    while parser.curToken.t_type != token.EOF:
+      var statment = parser.parseStatement()
 
-  prgoram.statements = @[]
+      if statment != nil: prgoram.statements.add(statment)
 
-  while parser.curToken.t_type != token.EOF:
-    var statment = parser.parseStatement()
+      parser.nextToken()
 
-    if statment != nil:
-      prgoram.statements.add(statment)
+    return Node(n_type: nProgram, program: prgoram)
+  except:
+    echo "-+-+-+-+-+-+-+-+-+-+-+-+-"
+    echo "PARSE ERROR!!"
+    echo "-+-+-+-+-+-+-+-+-+-+-+-+-"
 
-    parser.nextToken()
-
-  return Node(n_type: nProgram, program: prgoram)
+    return Node(n_type: nProgram, program: nil)
 
 proc parseIdentifier*(parser: Parser): Node =
   let identifier = Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
@@ -168,7 +174,7 @@ proc parseIntegerLiteral*(parser: Parser): Node =
   if utils.isStrDigit(parser.curToken.literal):
     value = parseInt(parser.curToken.literal)
   else:
-    parser.errors.add("not integer")
+    parser.error = "not integer"
     return nil
 
   literal.number = value
@@ -176,11 +182,13 @@ proc parseIntegerLiteral*(parser: Parser): Node =
   return Node(n_type: nExpression, expression: Expression(e_type: eIntegerLiteral, integerLit: literal))
 
 proc parseExpression*(parser: Parser, precedence: Priority): Node =
-  var prefix = parser.prefixParseFns[parser.curToken.t_type]
-  if prefix == nil:
+  let existance = parser.prefixParseFns.hasKey(parser.curToken.t_type)
+
+  if not existance:
     parser.noPrefixPraseError(parser.curToken.t_type)
     return nil
 
+  var prefix = parser.prefixParseFns[parser.curToken.t_type]
   var leftExp = prefix(parser).expression
 
   while not parser.peekTokenIs(token.SEMICOLON) and precedence < parser.peekPrecedence():
@@ -191,7 +199,7 @@ proc parseExpression*(parser: Parser, precedence: Priority): Node =
     parser.nextToken()
     leftExp = infix(parser, leftExp).expression
 
-  return  Node(n_type: nExpression, expression: leftExp)
+  return Node(n_type: nExpression, expression: leftExp)
 
 proc parssLetStatement*(parser: Parser): Node =
   var statement = LetStatement(tok: parser.curToken)
@@ -219,7 +227,7 @@ proc parseReturnStatement*(parser: Parser): Node =
   statement.expression = parser.parseExpression(LOWSET).expression
   while not parser.curTokenIs(token.SEMICOLON):
     if parser.curTokenIS(token.EOF):
-      parser.errors.add("can't return")
+      parser.error = "can't return"
       return nil
 
     parser.nextToken()

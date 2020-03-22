@@ -17,7 +17,6 @@ install:
 	curl https://nim-lang.org/choosenim/init.sh -sSf | sh
 
 init:
-	nimble install fnv
 	nim compile src/token/token.nim
 	nim compile src/lexer/lexer.nim
 	nim compile src/ast/ast.nim
@@ -46,6 +45,7 @@ token_test:
 	nim compile --run test/token_test/token_test.nim
 
 parser_test:
+	nim compile src/parser/parser.nim
 	nim compile --run test/parser_test/parser_test.nim
 
 eval_test:

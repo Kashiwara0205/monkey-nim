@@ -2,7 +2,6 @@ import ../ast/ast
 import tables
 import ../utils/utils
 from strformat import fmt
-import fnv
 import hashes
 
 type 

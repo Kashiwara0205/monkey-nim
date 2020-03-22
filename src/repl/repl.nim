@@ -2,9 +2,9 @@ import ../lexer/lexer
 import ../parser/parser
 import ../evaluator/evaluator
 import ../obj/obj
+from strformat import fmt
 
 const PROMPT = ">>"
-const ERROR_MESSAGE = "error"
 
 proc ctrlc() {.noconv.} =
   quit(QuitSuccess)
@@ -18,11 +18,11 @@ proc start*(): void =
     let line = stdin.readLine()
     let lex = newLexer(line)
     let parser = lex.newParser()
-    if parser.getErrors.len != 0:
-      echo ERROR_MESSAGE
+    let program = parser.parseProgram()
+    if parser.getError != "" :
+      echo fmt" -> {parser.getError}"
       continue
 
-    let program = parser.parseProgram()
     let eval = evaluator.eval(program, env)
     if eval != nil: echo eval.inspect()
 

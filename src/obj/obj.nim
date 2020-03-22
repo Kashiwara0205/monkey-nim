@@ -3,6 +3,7 @@ import tables
 import ../utils/utils
 from strformat import fmt
 import fnv
+import hashes
 
 type 
   ObjectType* = enum
@@ -70,15 +71,11 @@ type
   ArrayObj* = ref object of Object
     elements*: ref seq[Object]
 
-  HashKey* = ref object of Object
-    obj_type*: ObjectType
-    value*: uint64
   HashPair* = ref object of Object
     key*: Object
     value*: Object
   HashObj* = ref object of Object
-    pairs: Table[HashKey, HashPair]
-  Hashable* = ref object of Object
+    pairs*: Table[Hash, HashPair]
 
   Enviroment* = ref object of RootObj
     store*: Table[string, Object]
@@ -90,11 +87,11 @@ proc inspect*(obj: Object):string
 
 proc getType*(obj: IntegerObj):ObjectType
 proc inspect*(obj: IntegerObj): string
-proc hashKey*(obj: IntegerObj): HashKey
+proc hashKey*(obj: IntegerObj): Hash
 
 proc getType*(obj: BooleanObj):ObjectType
 proc inspect*(obj: BooleanObj): string
-proc hashKey*(obj: BooleanObj): HashKey
+proc hashKey*(obj: BooleanObj): Hash
 
 proc getType*(obj: NullObj):ObjectType
 proc inspect*(obj: NullObj): string
@@ -110,7 +107,7 @@ proc inspect*(obj: FunctionObj):string
 
 proc getType*(obj: StringObj):ObjectType
 proc inspect*(obj: StringObj): string
-proc hashKey*(obj: StringObj): HashKey
+proc hashKey*(obj: StringObj): Hash
 
 proc getType*(obj: BuiltinObj):ObjectType
 proc inspect*(obj: BuiltinObj): string
@@ -175,6 +172,17 @@ proc inspect*(obj: Object):string =
   of oHash:
     return obj.hash_obj.inspect()
 
+proc hashKey*(obj: Object): Hash =
+  case obj.o_type
+  of oInteger:
+    return obj.integer_obj.hashKey()
+  of oBoolean: 
+    return obj.boolean_obj.hashKey()
+  of oString:
+    return obj.string_obj.hashKey()
+  else:
+    discard
+
 #----------------------------------------
 # IntegerObj proc
 #----------------------------------------
@@ -184,8 +192,8 @@ proc getType*(obj: IntegerObj):ObjectType =
 proc inspect*(obj: IntegerObj): string =
   return fmt"{$obj.value}"
 
-proc hashKey*(obj: IntegerObj): HashKey =
-  return HashKey(obj_type: obj.o_type, value: uint64(obj.value))
+proc hashKey*(obj: IntegerObj): Hash =
+  return obj.value.hash
 
 #----------------------------------------
 # BooleanObj proc
@@ -196,10 +204,8 @@ proc getType*(obj: BooleanObj):ObjectType =
 proc inspect*(obj: BooleanObj): string =
   return fmt"{$obj.value}"
 
-proc hashKey*(obj: BooleanObj): HashKey =
-  var value: uint64 = if obj.value: 0 else: 1
-
-  return HashKey(obj_type: obj.o_type, value: value)
+proc hashKey*(obj: BooleanObj): Hash =
+  return obj.value.hash
 
 #----------------------------------------
 # NullObj proc
@@ -258,10 +264,8 @@ proc getType*(obj: StringObj):ObjectType =
 proc inspect*(obj: StringObj): string =
   return obj.value
 
-proc hashKey*(obj: StringObj): HashKey =
-  var value: uint64 = fnv1a64(obj.value)
-
-  return HashKey(obj_type: obj.o_type, value: value)
+proc hashKey*(obj: StringObj): Hash =
+  return obj.value.hash
 
 #----------------------------------------
 # BuiltinObj proc

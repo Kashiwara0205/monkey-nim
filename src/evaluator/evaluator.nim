@@ -3,6 +3,7 @@ import ../ast/ast
 import ../obj/obj
 import tables
 from strformat import fmt
+import hashes
 
 var
   NULL = Object( o_type: oNull, null_obj: NullObj())
@@ -33,6 +34,8 @@ proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): ref seq
 proc evalIndexExpression(left: Object, index: Object): Object
 proc evalArrayIndexExpression(arr: Object, index: Object): Object
 proc evalBlockStatement(block_statement: BlockStatement, env: Enviroment): Object
+proc evalHashLiteral(hash_literal: HashLiteral, env: Enviroment): Object
+proc evalHashIndexExpression(hash: Object, index: Object): Object
 proc convNativeBoolToBoolObj(input: bool): BooleanObj
 proc isTruthy(obj: Object): bool
 proc extendFunctionEnv(fn: FunctionObj, args: ref seq[Object]): Enviroment
@@ -144,8 +147,7 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
 
     return evalIndexExpression(left, index)
   of eHashLiteral:
-    # later implement
-    return Object()
+    return evalHashLiteral(expression.hashLit, env)
 
 proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): ref seq[Object] =
   var objects: ref seq[Object]
@@ -354,6 +356,9 @@ proc unwrapReturnValue(obj: Object): Object =
 proc evalIndexExpression(left: Object, index: Object): Object =
   if left.o_type == oArray and index.o_type == oInteger:
     return evalArrayIndexExpression(left, index)
+  
+  if left.o_type == oHash:
+    return evalHashIndexExpression(left, index)
 
   return newError(fmt"index operator not supported: {left.o_type}")
 
@@ -376,6 +381,50 @@ proc evalBlockStatement(block_statement: BlockStatement, env: Enviroment): Objec
     if exists_return_obj(obj): return obj
 
   return obj
+
+proc is_hashable(obj: Object): bool = 
+  return obj.o_type == oBoolean or
+         obj.o_type == oInteger or
+         obj.o_type == oString
+
+proc evalHashLiteral(hash_literal: HashLiteral, env: Enviroment): Object =
+  var pairs = initTable[Hash, HashPair]()
+
+  for keyNode, valNode in  hash_literal.pairs:
+    let key = evalExpression(keyNode, env)
+    if isError(key): return key
+
+    if(not is_hashable(key)):
+     return newError(fmt"unsable as hash key: {$key.o_type}")
+
+    let value = evalExpression(valNode, env)
+    if isError(value): return key
+
+    let hashed = key.hashKey()
+    pairs[hashed] = HashPair(key: key, value: value)
+
+  return Object(o_type: oHash, hash_obj: HashObj(pairs: pairs))
+
+proc evalHashIndexExpression(hash: Object, index: Object): Object =
+  let hash_obj = hash.hash_obj
+
+  if (not is_hashable(index)):
+    return newError(fmt"unsable as hash key: {$index.o_type}")
+  
+  let existance = hash_obj.pairs.hasKey(index.hashKey())
+  if not existance: return NULL
+
+  let value = hash_obj.pairs[index.hashKey()].value
+
+  case value.o_type
+  of oInteger:
+    return Object(o_type: oInteger, integer_obj: value.integer_obj)
+  of oBoolean: 
+    return Object(o_type: oBoolean, boolean_obj: value.boolean_obj)
+  of oString:
+    return Object(o_type: oString, string_obj: value.string_obj)
+  else:
+    discard
 
 # buildin functions
 proc len(args: ref seq[Object]): Object =

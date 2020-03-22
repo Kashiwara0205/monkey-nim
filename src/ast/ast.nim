@@ -350,7 +350,7 @@ proc getValue*(expression: Expression):string =
 
 proc hash*(literal: Expression): Hash =
   var h: Hash = 0
-  h = h !& hash(literal.getValue)
+  h = h !& literal.getValue.hash
   result = !$h
 
 #----------------------------------------

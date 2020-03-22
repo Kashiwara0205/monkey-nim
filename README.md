@@ -1,6 +1,15 @@
 # monkey-nim
 monkey language made by Nim
 
+## Usage
+
+run monkey
+
+```
+$ make monkey
+```
+
+
 ## SetUp
 
 Install nim language
@@ -14,16 +23,6 @@ Setup Program
 ```
 $ make init
 ```
-
-
-## Usage
-
-run monkey
-
-```
-$ make monkey
-```
-
 
 ## Test
 

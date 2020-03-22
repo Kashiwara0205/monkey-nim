@@ -455,3 +455,54 @@ block error_handling_test:
   obj = test.get_eval(input)
   test.eq_value(oError, obj.o_type)
   test.eq_value("Error: unknown operator: oString - oString", obj.inspect)
+
+# outline: whether correct get hash literal test
+# expected_value: expected number
+block hash_literal_test:
+  var input = "{1: 1}"
+  var obj = test.get_eval(input)
+  test.eq_value(oHash, obj.o_type)
+  test.eq_value("{1: 1}", obj.inspect)
+
+  input = "{\"1\": 1}"
+  obj = test.get_eval(input)
+  test.eq_value(oHash, obj.o_type)
+  test.eq_value("{1: 1}", obj.inspect)
+
+  input = "{true: 1}"
+  obj = test.get_eval(input)
+  test.eq_value(oHash, obj.o_type)
+  test.eq_value("{true: 1}", obj.inspect)
+
+# outline: whether correct get hash index expression test
+# expected_value: expected number
+block hash_index_expression_test:
+  var input = "{\"foo\": 5}[\"foo\"]"
+  var obj = test.get_eval(input)
+
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("5", obj.inspect)
+
+  input = "{1: 5}[1]"
+  obj = test.get_eval(input)
+
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("5", obj.inspect)
+
+  input = "{true: 5}[true]"
+  obj = test.get_eval(input)
+
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("5", obj.inspect)
+
+  input = "{1: 5, \"1\": 10}[1]"
+  obj = test.get_eval(input)
+
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("5", obj.inspect)
+
+  input = "{1: 5, \"1\": 10}[\"1\"]"
+  obj = test.get_eval(input)
+
+  test.eq_value(oInteger, obj.o_type)
+  test.eq_value("10", obj.inspect)

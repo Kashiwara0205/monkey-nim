@@ -13,7 +13,6 @@ type
 proc newToken*(tokenType: TokenType, ch: byte): Token
 proc newMultiliteralToken*(tokenType: TokenType, str: string): Token
 
-# define new
 proc newToken*(tokenType: TokenType, ch: byte): Token =
   # convert byte to char and char to string
   let str = fmt"{$ch.byte.char}"
@@ -66,7 +65,4 @@ var keywords = {
 }.newTable
 
 proc lookupIdent*(ident: string): TokenType =
-  if keywords.hasKey(ident):
-    return keywords[ident]
-  else:
-    return IDENT
+  return if keywords.hasKey(ident): keywords[ident] else: IDENT

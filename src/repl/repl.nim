@@ -11,6 +11,7 @@ proc ctrlc() {.noconv.} =
 
 proc start*(): void =
   let env = newEnv()
+  echo "Exit: Ctrl + c"
   setControlCHook(ctrlc)
   while true:
     stdout.write PROMPT

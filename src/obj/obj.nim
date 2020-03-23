@@ -1,10 +1,12 @@
-import ../ast/ast
-import tables
-import ../utils/utils
-from strformat import fmt
-import hashes
+import
+  ../ast/ast,
+  tables,
+  ../utils/utils,
+  hashes
 
-type 
+from strformat import fmt
+
+type
   ObjectType* = enum
     oInteger
     oBoolean
@@ -22,7 +24,7 @@ type
     case o_type*: ObjectType
     of oInteger:
       integer_obj*: IntegerObj
-    of oBoolean: 
+    of oBoolean:
       boolean_obj*: BooleanObj
     of oNull:
       null_obj*: NullObj
@@ -81,43 +83,33 @@ type
     outer*: Enviroment
 
 # forward declaration
-proc getType*(obj: Object):ObjectType
 proc inspect*(obj: Object):string
+proc isHashAble*(obj: Object):bool
 
-proc getType*(obj: IntegerObj):ObjectType
 proc inspect*(obj: IntegerObj): string
 proc hashKey*(obj: IntegerObj): Hash
 
-proc getType*(obj: BooleanObj):ObjectType
 proc inspect*(obj: BooleanObj): string
 proc hashKey*(obj: BooleanObj): Hash
 
-proc getType*(obj: NullObj):ObjectType
 proc inspect*(obj: NullObj): string
 
-proc getType*(obj: ReturnValueObj):ObjectType
-proc inspect*(obj: ReturnValueObj): string 
+proc inspect*(obj: ReturnValueObj): string
 
-proc getType*(obj: ErrorObj):ObjectType
-proc inspect*(obj: ErrorObj): string 
+proc inspect*(obj: ErrorObj): string
 
-proc getType*(obj: FunctionObj):ObjectType
 proc inspect*(obj: FunctionObj):string
 
-proc getType*(obj: StringObj):ObjectType
 proc inspect*(obj: StringObj): string
 proc hashKey*(obj: StringObj): Hash
 
-proc getType*(obj: BuiltinObj):ObjectType
 proc inspect*(obj: BuiltinObj): string
 
-proc getType*(obj: ArrayObj):ObjectType
 proc inspect*(obj: ArrayObj): string
 
-proc getType*(obj: HashObj):ObjectType
 proc inspect*(obj: HashObj): string
 
-proc newEnv*(): Enviroment 
+proc newEnv*(): Enviroment
 proc newEncloseEnv*(outer: Enviroment): Enviroment
 proc getEnv*(env: Enviroment, name: string): (Object, bool)
 proc setEnv*(env: Enviroment, name: string, val: Object): void
@@ -125,34 +117,11 @@ proc setEnv*(env: Enviroment, name: string, val: Object): void
 #----------------------------------------
 # Object proc
 #----------------------------------------
-proc getType*(obj: Object):ObjectType =
-  case obj.o_type
-  of oInteger:
-    return obj.integer_obj.getType()
-  of oBoolean: 
-    return obj.boolean_obj.getType()
-  of oNull:
-    return obj.null_obj.getType()
-  of oReturnValue:
-    return obj.return_value_obj.getType()
-  of oError:
-    return obj.error_obj.getType()
-  of oFunction:
-    return obj.function_obj.getType()
-  of oString:
-    return obj.string_obj.getType()
-  of oBuiltin:
-    return obj.builtin_obj.getType()
-  of oArray:
-    return obj.array_obj.getType()
-  of oHash:
-    return obj.hash_obj.getType()
-
 proc inspect*(obj: Object):string =
   case obj.o_type
   of oInteger:
     return obj.integer_obj.inspect()
-  of oBoolean: 
+  of oBoolean:
     return obj.boolean_obj.inspect()
   of oNull:
     return obj.null_obj.inspect()
@@ -171,11 +140,22 @@ proc inspect*(obj: Object):string =
   of oHash:
     return obj.hash_obj.inspect()
 
+proc isHashAble*(obj: Object):bool =
+  case obj.o_type
+  of oInteger:
+    return true
+  of oBoolean:
+    return true
+  of oString:
+    return true
+  else:
+    return false
+
 proc hashKey*(obj: Object): Hash =
   case obj.o_type
   of oInteger:
     return obj.integer_obj.hashKey()
-  of oBoolean: 
+  of oBoolean:
     return obj.boolean_obj.hashKey()
   of oString:
     return obj.string_obj.hashKey()
@@ -185,60 +165,35 @@ proc hashKey*(obj: Object): Hash =
 #----------------------------------------
 # IntegerObj proc
 #----------------------------------------
-proc getType*(obj: IntegerObj):ObjectType =
-  return oInteger
+proc inspect*(obj: IntegerObj): string = return fmt"{$obj.value}"
 
-proc inspect*(obj: IntegerObj): string =
-  return fmt"{$obj.value}"
-
-proc hashKey*(obj: IntegerObj): Hash =
-  return obj.value.hash
+proc hashKey*(obj: IntegerObj): Hash = return obj.value.hash
 
 #----------------------------------------
 # BooleanObj proc
 #----------------------------------------
-proc getType*(obj: BooleanObj):ObjectType =
-  return oBoolean
+proc inspect*(obj: BooleanObj): string = return fmt"{$obj.value}"
 
-proc inspect*(obj: BooleanObj): string =
-  return fmt"{$obj.value}"
-
-proc hashKey*(obj: BooleanObj): Hash =
-  return obj.value.hash
+proc hashKey*(obj: BooleanObj): Hash = return obj.value.hash
 
 #----------------------------------------
 # NullObj proc
 #----------------------------------------
-proc getType*(obj: NullObj):ObjectType =
-  return oNull
-
-proc inspect*(obj: NullObj): string =
-  return "null"
+proc inspect*(obj: NullObj): string = return "null"
 
 #----------------------------------------
 # ReturnValueObj proc
 #----------------------------------------
-proc getType*(obj: ReturnValueObj):ObjectType =
-  return oReturnValue
-
-proc inspect*(obj: ReturnValueObj): string =
-  return obj.value.inspect()
+proc inspect*(obj: ReturnValueObj): string = return obj.value.inspect()
 
 #----------------------------------------
 # ErrorObj proc
 #----------------------------------------
-proc getType*(obj: ErrorObj):ObjectType =
-  return oError
-
-proc inspect*(obj: ErrorObj): string =
-  return fmt"Error: {$obj.message}"
+proc inspect*(obj: ErrorObj): string = return fmt"Error: {$obj.message}"
 
 #----------------------------------------
 # FunctionObj proc
 #----------------------------------------
-proc getType*(obj: FunctionObj):ObjectType =
-  return oFunction
-
 proc inspect*(obj: FunctionObj):string =
   var params: seq[string]
 
@@ -257,31 +212,19 @@ proc inspect*(obj: FunctionObj):string =
 #----------------------------------------
 # StringObj proc
 #----------------------------------------
-proc getType*(obj: StringObj):ObjectType =
-  return oString
+proc inspect*(obj: StringObj): string = return obj.value
 
-proc inspect*(obj: StringObj): string =
-  return obj.value
-
-proc hashKey*(obj: StringObj): Hash =
-  return obj.value.hash
+proc hashKey*(obj: StringObj): Hash = return obj.value.hash
 
 #----------------------------------------
 # BuiltinObj proc
 #----------------------------------------
-proc getType*(obj: BuiltinObj):ObjectType =
-  return oBuiltin
-
-proc inspect*(obj: BuiltinObj): string = 
-  return "builtin function"
+proc inspect*(obj: BuiltinObj): string = return "builtin function"
 
 #----------------------------------------
 # ArrayObj proc
 #----------------------------------------
-proc getType*(obj: ArrayObj):ObjectType =
-  return oArray
-
-proc inspect*(obj: ArrayObj): string = 
+proc inspect*(obj: ArrayObj): string =
   var elements: seq[string]
   for element in obj.elements[]:
     elements.add(element.inspect())
@@ -295,9 +238,6 @@ proc inspect*(obj: ArrayObj): string =
 #----------------------------------------
 # HashObj proc
 #----------------------------------------
-proc getType*(obj: HashObj):ObjectType =
-  return oHash
-
 proc inspect*(obj: HashObj): string =
   var pairs: seq[string]
 
@@ -313,7 +253,7 @@ proc inspect*(obj: HashObj): string =
 #----------------------------------------
 # Enviroment proc
 #----------------------------------------
-proc newEnv*(): Enviroment = 
+proc newEnv*(): Enviroment =
   let store = initTable[string, Object]()
   return Enviroment(store: store)
 
@@ -334,5 +274,4 @@ proc getEnv*(env: Enviroment, name: string): (Object, bool) =
     # return from inner scope
     return (env.store[name], existance)
 
-proc setEnv*(env: Enviroment, name: string, val: Object): void = 
-  env.store[name] = val
+proc setEnv*(env: Enviroment, name: string, val: Object): void = env.store[name] = val

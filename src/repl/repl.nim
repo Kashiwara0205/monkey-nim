@@ -32,6 +32,6 @@ proc start(): void =
 
     let eval = evaluator.eval(program, env)
 
-    if eval != nil: echo eval.inspect()
+    if not eval.isNil: echo eval.inspect()
 
 start()

@@ -1,14 +1,15 @@
-import ../token/token
-import ../utils/utils
-import tables
-import hashes
+import
+  ../token/token,
+  ../utils/utils,
+  tables,
+  hashes
 
 type
   NodeType* = enum
     nExpression
     nStatement
     nProgram
-type
+
   ExpressionType* = enum
     eIdentifier
     eBoolean
@@ -23,7 +24,6 @@ type
     eIndexExpression
     eHashLiteral
 
-type
   StatementType* = enum
     sLetStatement
     sReturnStatement
@@ -160,7 +160,7 @@ type
   Statement* = ref object of RootObj
     case s_type*: StatementType
     of sBlockStatement:
-      blockStmt* : BlockStatement  
+      blockStmt* : BlockStatement
     of sLetStatement:
       letStmt* : LetStatement
     of sReturnStatement:
@@ -381,36 +381,28 @@ proc getValue*(statement: Statement): string =
 #----------------------------------------
 # Identifier proc
 #----------------------------------------
-proc getTokenLiteral*(identifier: Identifier): string =
-  return identifier.tok.literal
+proc getTokenLiteral*(identifier: Identifier): string = return identifier.tok.literal
 
-proc getValue*(identifier: Identifier): string =
-  return identifier.variable_name
+proc getValue*(identifier: Identifier): string = return identifier.variable_name
 
 #----------------------------------------
 # Boolean proc
 #----------------------------------------
-proc getTokenLiteral*(boolean: Boolean): string =
-  return boolean.tok.literal
+proc getTokenLiteral*(boolean: Boolean): string = return boolean.tok.literal
 
-proc getValue*(boolean: Boolean): string =
-
-  return boolean.tok.literal
+proc getValue*(boolean: Boolean): string = return boolean.tok.literal
 
 #----------------------------------------
 # IntegerLiteral proc
 #----------------------------------------
-proc getTokenLiteral*(literal: IntegerLiteral): string =
-  return literal.tok.literal
+proc getTokenLiteral*(literal: IntegerLiteral): string = return literal.tok.literal
 
-proc getValue*(literal: IntegerLiteral): string =
-  return literal.tok.literal
+proc getValue*(literal: IntegerLiteral): string = return literal.tok.literal
 
 #----------------------------------------
 # PrefixExpression proc
 #----------------------------------------
-proc getTokenLiteral*(expression: PrefixExpression): string =
-  return expression.tok.literal
+proc getTokenLiteral*(expression: PrefixExpression): string = return expression.tok.literal
 
 proc getValue*(expression: PrefixExpression): string =
   var str = ""
@@ -424,8 +416,7 @@ proc getValue*(expression: PrefixExpression): string =
 #----------------------------------------
 # InfixExpression proc
 #----------------------------------------
-proc getTokenLiteral*(expression: InfixExpression): string =
-  return expression.tok.literal
+proc getTokenLiteral*(expression: InfixExpression): string = return expression.tok.literal
 
 proc getValue*(expression: InfixExpression): string =
   var str = ""
@@ -440,17 +431,14 @@ proc getValue*(expression: InfixExpression): string =
 #----------------------------------------
 # StringLiteral proc
 #----------------------------------------
-proc getTokenLiteral*(literal: StringLiteral): string =
-  return literal.tok.literal
+proc getTokenLiteral*(literal: StringLiteral): string = return literal.tok.literal
 
-proc getValue*(literal: StringLiteral): string =
-  return literal.tok.literal
+proc getValue*(literal: StringLiteral): string = return literal.tok.literal
 
 #----------------------------------------
 # IfExpression proc
 #----------------------------------------
-proc getTokenLiteral*(expression: IfExpression): string =
-  return expression.tok.literal
+proc getTokenLiteral*(expression: IfExpression): string = return expression.tok.literal
 
 proc getValue*(expression: IfExpression): string =
   var str = "if"
@@ -458,7 +446,7 @@ proc getValue*(expression: IfExpression): string =
   str &= " "
   str &= expression.consequence.getValue()
 
-  if expression.alternative != nil:
+  if not expression.alternative.isNil:
     str &= " else "
     str &= expression.alternative.getValue()
 
@@ -467,8 +455,7 @@ proc getValue*(expression: IfExpression): string =
 #----------------------------------------
 # FunctionLiteral proc
 #----------------------------------------
-proc getTokenLiteral*(literal: FunctionLiteral): string =
-  return literal.tok.literal
+proc getTokenLiteral*(literal: FunctionLiteral): string = return literal.tok.literal
 
 proc getValue*(literal: FunctionLiteral): string =
   var params: seq[string]
@@ -487,8 +474,7 @@ proc getValue*(literal: FunctionLiteral): string =
 #----------------------------------------
 # CallExpression proc
 #----------------------------------------
-proc getTokenLiteral*(expression: CallExpression): string =
-  return expression.tok.literal
+proc getTokenLiteral*(expression: CallExpression): string = return expression.tok.literal
 
 proc getValue*(expression: CallExpression): string =
   var args: seq[string]
@@ -505,8 +491,7 @@ proc getValue*(expression: CallExpression): string =
 #----------------------------------------
 # ArrayLiteral proc
 #----------------------------------------
-proc getTokenLiteral*(literal: ArrayLiteral): string =
-  return literal.tok.literal
+proc getTokenLiteral*(literal: ArrayLiteral): string = return literal.tok.literal
 
 proc getValue*(literal: ArrayLiteral): string =
   var elements: seq[string]
@@ -522,8 +507,7 @@ proc getValue*(literal: ArrayLiteral): string =
 #----------------------------------------
 # IndexExpression proc
 #----------------------------------------
-proc getTokenLiteral*(expression: IndexExpression): string =
-  return expression.tok.literal
+proc getTokenLiteral*(expression: IndexExpression): string = return expression.tok.literal
 
 proc getValue*(expression: IndexExpression): string =
   var str = expression.left.getValue()
@@ -536,8 +520,7 @@ proc getValue*(expression: IndexExpression): string =
 #----------------------------------------
 # HashLiteral proc
 #----------------------------------------
-proc getTokenLiteral*(literal: HashLiteral): string =
-  return literal.tok.literal
+proc getTokenLiteral*(literal: HashLiteral): string = return literal.tok.literal
 
 proc getValue*(literal: HashLiteral): string =
   var pairs: seq[string]
@@ -546,15 +529,14 @@ proc getValue*(literal: HashLiteral): string =
     let pair = key.getValue() & ":" & val.getValue()
     pairs.add(pair)
 
-  var pairs_str = "{" & utils.cnvSeqStrToStr(pairs) & "}"
+  let pairs_str = "{" & utils.cnvSeqStrToStr(pairs) & "}"
 
   return pairs_str
 
 #----------------------------------------
 # LetStatement proc
 #----------------------------------------
-proc getTokenLiteral*(statement: LetStatement): string =
-  return statement.tok.literal
+proc getTokenLiteral*(statement: LetStatement): string = return statement.tok.literal
 
 proc getValue*(statement: LetStatement): string =
   # get [let] from statement.getTokenLiteral()
@@ -564,8 +546,7 @@ proc getValue*(statement: LetStatement): string =
   str &= "="
 
   # get [number] from statement.value.getValue()
-  if statement.expression != nil:
-    str &= statement.expression.getValue()
+  if not statement.expression.isNil: str &= statement.expression.getValue()
 
   str &= ";"
   return str
@@ -573,14 +554,12 @@ proc getValue*(statement: LetStatement): string =
 #----------------------------------------
 # ReturnStatement proc
 #----------------------------------------
-proc getTokenLiteral*(statement: ReturnStatement): string =
-  return statement.tok.literal
+proc getTokenLiteral*(statement: ReturnStatement): string = return statement.tok.literal
 
 proc getValue*(statement: ReturnStatement): string =
   var str = statement.getTokenLiteral() & " "
 
-  if statement.expression != nil:
-    str &= statement.expression.getValue()
+  if not statement.expression.isNil: str &= statement.expression.getValue()
 
   str &= ";"
   return str
@@ -588,20 +567,17 @@ proc getValue*(statement: ReturnStatement): string =
 #----------------------------------------
 # ExpressionStatement proc
 #----------------------------------------
-proc getTokenLiteral*(statement: ExpressionStatement): string =
-  return statement.tok.literal
+proc getTokenLiteral*(statement: ExpressionStatement): string = return statement.tok.literal
 
 proc getValue*(statement: ExpressionStatement): string =
-  if statement.expression != nil:
-    return statement.expression.getValue()
+  let expression = statement.expression
 
-  return ""
+  return if expression.isNil: "" else: expression.getValue()
 
 #----------------------------------------
 # Blockstatement proc
 #----------------------------------------
-proc getTokenLiteral*(statement: BlockStatement): string =
-  return statement.tok.literal
+proc getTokenLiteral*(statement: BlockStatement): string = return statement.tok.literal
 
 proc getValue*(statement: BlockStatement): string =
   var str = ""

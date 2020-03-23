@@ -1,10 +1,11 @@
-import ../token/token
-import ../lexer/lexer
-import ../utils/utils
-import strutils
-import ../ast/ast
-import tables
-import hashes
+import
+  ../token/token,
+  ../lexer/lexer,
+  ../utils/utils,
+  strutils,
+  ../ast/ast,
+  tables,
+  hashes
 
 type Priority = enum
   LOWSET
@@ -72,8 +73,7 @@ proc parseArrayLiteral*(parser: Parser): Node
 proc parseIndexExpression*(parser: Parser, left: Expression): Node
 proc parseHashLiteral*(parser: Parser): Node
 
-proc getError*(parser: Parser): string =
-  return parser.error
+proc getError*(parser: Parser): string = return parser.error
 
 proc peekError*(parser: Parser, t_type: token.TokenType): void =
   parser.error = "peekError"
@@ -87,11 +87,9 @@ proc nextToken*(parser: Parser): void =
   parser.curToken = parser.peekToken
   parser.peekToken = parser.lex.nextToken()
 
-proc curTokenIs*(parser: Parser, t_type: token.TokenType): bool =
-  return parser.curToken.t_type == t_type
+proc curTokenIs*(parser: Parser, t_type: token.TokenType): bool = return parser.curToken.t_type == t_type
 
-proc peekTokenIs*(parser: Parser, t_type: token.TokenType): bool =
-  return parser.peekToken.t_type == t_type
+proc peekTokenIs*(parser: Parser, t_type: token.TokenType): bool = return parser.peekToken.t_type == t_type
 
 proc expectPeekTokenIs*(parser: Parser, t_type: token.TokenType): bool =
   if parser.peekTokenIs(t_type):
@@ -102,16 +100,12 @@ proc expectPeekTokenIs*(parser: Parser, t_type: token.TokenType): bool =
     return false
 
 proc peekPrecedence*(parser: Parser): Priority =
-  if precedences.hasKey(parser.peekToken.t_type):
-    return precedences[parser.peekToken.t_type]
-  else:
-    return LOWSET
+  let existance = precedences.hasKey(parser.peekToken.t_type)
+  return if existance: precedences[parser.peekToken.t_type] else: LOWSET
 
 proc curPrecedence*(parser: Parser): Priority =
-  if precedences.hasKey(parser.curToken.t_type):
-    return precedences[parser.curToken.t_type]
-  else:
-    return LOWSET
+  let existance = precedences.hasKey(parser.curToken.t_type)
+  return if existance: precedences[parser.curToken.t_type] else: LOWSET
 
 proc newParser*(lex: lexer.Lexer): Parser =
   var parser = Parser(lex: lex, error: "")
@@ -151,7 +145,7 @@ proc parseProgram*(parser: Parser): Node =
     while parser.curToken.t_type != token.EOF:
       var statment = parser.parseStatement()
 
-      if statment != nil: prgoram.statements.add(statment)
+      if not statment.isNil: prgoram.statements.add(statment)
 
       parser.nextToken()
 
@@ -168,8 +162,9 @@ proc parseIdentifier*(parser: Parser): Node =
   return Node(n_type: nExpression, expression: Expression(e_type: eIdentifier, identifier: identifier))
 
 proc parseIntegerLiteral*(parser: Parser): Node =
-  var literal = IntegerLiteral(tok: parser.curToken)
-  var value: int64
+  var
+    literal = IntegerLiteral(tok: parser.curToken)
+    value: int64
 
   if utils.isStrDigit(parser.curToken.literal):
     value = parseInt(parser.curToken.literal)
@@ -188,12 +183,12 @@ proc parseExpression*(parser: Parser, precedence: Priority): Node =
     parser.noPrefixPraseError(parser.curToken.t_type)
     return nil
 
-  var prefix = parser.prefixParseFns[parser.curToken.t_type]
+  let prefix = parser.prefixParseFns[parser.curToken.t_type]
   var leftExp = prefix(parser).expression
 
   while not parser.peekTokenIs(token.SEMICOLON) and precedence < parser.peekPrecedence():
-    var infix = parser.infixParseFns[parser.peekToken.t_type]
-    if infix == nil:
+    let infix = parser.infixParseFns[parser.peekToken.t_type]
+    if infix.isNil:
       return  Node(n_type: nExpression, expression: leftExp)
 
     parser.nextToken()
@@ -204,13 +199,11 @@ proc parseExpression*(parser: Parser, precedence: Priority): Node =
 proc parssLetStatement*(parser: Parser): Node =
   var statement = LetStatement(tok: parser.curToken)
 
-  if not parser.expectPeekTokenIs(token.IDENT):
-    return nil
+  if not parser.expectPeekTokenIs(token.IDENT): return nil
 
   statement.name = Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
 
-  if not parser.expectPeekTokenIs(token.ASSIGN):
-    return nil
+  if not parser.expectPeekTokenIs(token.ASSIGN): return nil
 
   parser.nextToken()
   statement.expression = parser.parseExpression(LOWSET).expression
@@ -259,7 +252,7 @@ proc parseBlockStatement*(parser: Parser): Node =
 
   while not parser.curTokenIs(token.RBRACE) and not parser.curTokenIs(token.EOF):
     var node = parser.parseStatement()
-    if node != nil:
+    if not node.isNil:
       block_statement.statements.add(node.statement)
 
     parser.nextToken()
@@ -275,7 +268,7 @@ proc parsePrefixExpression*(parser: Parser): Node =
 
 proc parseInfixExpression*(parser: Parser, left: Expression): Node =
   var expression = InfixExpression(tok: parser.curToken, operator: parser.curToken.literal, left: left)
-  var precedence = parser.curPrecedence()
+  let precedence = parser.curPrecedence()
 
   parser.nextToken()
   expression.right = parser.parseExpression(precedence).expression
@@ -289,6 +282,7 @@ proc parseBoolean*(parser: Parser): Node =
 proc parseGroupExpression*(parser: Parser): Node =
   parser.nextToken()
   let expression = parser.parseExpression(LOWSET)
+
   if not parser.expectPeekTokenIs(token.RPAREN):
     return nil
 
@@ -325,7 +319,6 @@ proc parseIfExpression*(parser: Parser): Node =
 proc parseFunctionParameters*(parser: Parser): ref seq[Identifier] =
   var identifiers:ref seq[Identifier]
   identifiers.new
-  identifiers[] = @[]
 
   if parser.peekTokenIs(token.RPAREN):
     parser.nextToken()
@@ -348,22 +341,17 @@ proc parseFunctionParameters*(parser: Parser): ref seq[Identifier] =
     var ident = Identifier(tok: parser.curToken, variable_name: parser.curToken.literal)
     identifiers[].add(ident)
 
-  if not parser.expectPeekTokenIs(token.RPAREN):
-    return nil
+  if not parser.expectPeekTokenIs(token.RPAREN): return nil
 
   return identifiers
 
 proc parseFunctionLiteral*(parser: Parser): Node =
   var literal = FunctionLiteral(tok: parser.curToken)
 
-  if not parser.expectPeekTokenIs(token.LPAREN):
-    return nil
-
+  if not parser.expectPeekTokenIs(token.LPAREN): return nil
   literal.parameters = parser.parseFunctionParameters()
 
-  if not parser.expectPeekTokenIs(token.LBRACE):
-    return nil
-
+  if not parser.expectPeekTokenIs(token.LBRACE): return nil
   literal.body = parser.parseBlockStatement().statement.blockStmt
 
   return Node(n_type: nExpression, expression: Expression(e_type: eFunctionLiteral, functionLit: literal))
@@ -371,7 +359,6 @@ proc parseFunctionLiteral*(parser: Parser): Node =
 proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[Expression] =
   var list: ref seq[Expression]
   list.new
-  list[] = @[]
 
   if parser.peekTokenIs(tok):
     parser.nextToken()
@@ -385,8 +372,7 @@ proc parseExpressionList*(parser: Parser, tok: token.TokenType): ref seq[Express
     parser.nextToken()
     list[].add(parser.parseExpression(LOWSET).expression)
 
-  if not parser.expectPeekTokenIs(tok):
-    return nil
+  if not parser.expectPeekTokenIs(tok): return nil
 
   return list
 
@@ -413,8 +399,7 @@ proc parseCallArguments*(parser: Parser): ref seq[Expression] =
     parser.nextToken()
     args[].add(parser.parseExpression(LOWSET).expression)
 
-  if not parser.expectPeekTokenIs(token.RPAREN):
-    return nil
+  if not parser.expectPeekTokenIs(token.RPAREN): return nil
 
   return args
 
@@ -434,8 +419,7 @@ proc parseIndexExpression*(parser: Parser, left: Expression): Node =
   parser.nextToken()
   expression.index = parser.parseExpression(LOWSET).expression
 
-  if not parser.expectPeekTokenIs(token.RBRACKET):
-    return nil
+  if not parser.expectPeekTokenIs(token.RBRACKET): return nil
 
   return  Node(n_type: nExpression, expression: Expression(e_type: eIndexExpression, indexExp: expression) )
 
@@ -446,17 +430,14 @@ proc parseHashLiteral*(parser: Parser): Node =
     parser.nextToken()
     let key = parser.parseExpression(LOWSET).expression
 
-    if not parser.expectPeekTokenIs(token.COLON):
-      return nil
+    if not parser.expectPeekTokenIs(token.COLON): return nil
 
     parser.nextToken()
 
     let value =  parser.parseExpression(LOWSET).expression
     hash.pairs[key] = value
-    if not parser.peekTokenIs(token.RBRACE) and not parser.expectPeekTokenIs(token.COMMA):
-      return nil
+    if not parser.peekTokenIs(token.RBRACE) and not parser.expectPeekTokenIs(token.COMMA): return nil
 
-  if not parser.expectPeekTokenIs(token.RBRACE):
-    return nil
+  if not parser.expectPeekTokenIs(token.RBRACE): return nil
 
   return Node(n_type: nExpression, expression: Expression(e_type: eHashLiteral, hashLit: hash) )

@@ -1,29 +1,37 @@
-import ../lexer/lexer
-import ../parser/parser
-import ../evaluator/evaluator
-import ../obj/obj
+import
+  ../lexer/lexer,
+  ../parser/parser,
+  ../evaluator/evaluator,
+  ../obj/obj
+
 from strformat import fmt
 
-const PROMPT = ">>"
+const
+  PROMPT = ">>"
+  EXIT_MESSAGE = "Exit: Ctrl + c"
 
-proc ctrlc() {.noconv.} =
-  quit(QuitSuccess)
+proc ctrlc() {.noconv.} = quit(QuitSuccess)
 
-proc start*(): void =
-  let env = newEnv()
-  echo "Exit: Ctrl + c"
+proc start(): void =
   setControlCHook(ctrlc)
+
+  let env = newEnv()
+  echo EXIT_MESSAGE
+
   while true:
     stdout.write PROMPT
-    let line = stdin.readLine()
-    let lex = newLexer(line)
-    let parser = lex.newParser()
-    let program = parser.parseProgram()
+    let
+      line = stdin.readLine()
+      lex = newLexer(line)
+      parser = lex.newParser()
+      program = parser.parseProgram()
+
     if parser.getError != "" :
       echo fmt" -> {parser.getError}"
       continue
 
     let eval = evaluator.eval(program, env)
+
     if eval != nil: echo eval.inspect()
 
 start()

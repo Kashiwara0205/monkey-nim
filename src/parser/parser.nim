@@ -2,10 +2,12 @@ import
   ../token/token,
   ../lexer/lexer,
   ../utils/utils,
-  strutils,
   ../ast/ast,
+  strutils,
   tables,
   hashes
+
+from strformat import fmt
 
 type Priority = enum
   LOWSET
@@ -76,11 +78,11 @@ proc parseHashLiteral*(parser: Parser): Node
 proc getError*(parser: Parser): string = return parser.error
 
 proc peekError*(parser: Parser, t_type: token.TokenType): void =
-  parser.error = "peekError"
+  parser.error = fmt"expected next token no be {$t_type}, got {$parser.peekToken.t_type} instead"
   raise
 
 proc noPrefixPraseError*(parser: Parser, t_type: token.TokenType): void =
-  parser.error = "noPrefixPraseError"
+  parser.error = fmt"no prefix parse fuction for {$t_type} found"
   raise
 
 proc nextToken*(parser: Parser): void =
@@ -151,10 +153,6 @@ proc parseProgram*(parser: Parser): Node =
 
     return Node(n_type: nProgram, program: prgoram)
   except:
-    echo "-+-+-+-+-+-+-+-+-+-+-+-+-"
-    echo "PARSE ERROR!!"
-    echo "-+-+-+-+-+-+-+-+-+-+-+-+-"
-
     return Node(n_type: nProgram, program: nil)
 
 proc parseIdentifier*(parser: Parser): Node =

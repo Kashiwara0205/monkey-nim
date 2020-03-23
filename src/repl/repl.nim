@@ -9,6 +9,20 @@ from strformat import fmt
 const
   PROMPT = ">>"
   EXIT_MESSAGE = "Exit: Ctrl + c"
+  MonkeyFace = 
+    """ 
+             |||||
+    .--.  .-"     "-.  .--.
+   / .. \/  .-. .-.  \/ .. \
+  | |  '|  /   Y   \  |'  | |
+  | \   \  \ 0 | 0 /  /   / |
+   \ '- ,\.-'''''''-./, -' /
+    ''-' /_   ^ ^   _\ '-''
+        |  \._   _./  |
+        \   \ '~' /   /
+         '._ '-=-' _.'
+            '-----'
+  """
 
 proc ctrlc() {.noconv.} = quit(QuitSuccess)
 
@@ -27,6 +41,7 @@ proc start(): void =
       program = parser.parseProgram()
 
     if parser.getError != "" :
+      echo MonkeyFace
       echo fmt" -> {parser.getError}"
       continue
 

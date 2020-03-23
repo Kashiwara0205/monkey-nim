@@ -1,11 +1,13 @@
 
-import ../ast/ast
-import ../obj/obj
-import tables
-from strformat import fmt
-import hashes
+import 
+  ../ast/ast,
+  ../obj/obj,
+  tables,
+  hashes
 
-var
+from strformat import fmt
+
+let
   NULL = Object( o_type: oNull, null_obj: NullObj())
   TRUE = Object( o_type: oBoolean, boolean_obj: BooleanObj(value: true))
   FALSE = Object( o_type: oBoolean, boolean_obj: BooleanObj(value: false))
@@ -86,15 +88,16 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
     let boolean_obj = convNativeBoolToBoolObj(expression.boolean.value)
     return Object(o_type: oBoolean, boolean_obj: boolean_obj)
   of ePrefixExpression:
-    let prefix = expression.prefixExp
-    let right = evalExpression(prefix.right, env)
+    let 
+      prefix = expression.prefixExp
+      right = evalExpression(prefix.right, env)
 
     if isError(right): return right
     return evalPrefixExpression(prefix.operator, right)
   of eInfixExpression:
-    let infix = expression.infixExp
-
-    let left = evalExpression(infix.left, env)
+    let 
+      infix = expression.infixExp
+      left = evalExpression(infix.left, env)
     if isError(left): return left
 
     let right = evalExpression(infix.right, env)
@@ -110,19 +113,22 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
 
     return evalIdentifier(identifier, env)
   of eFunctionLiteral:
-    let function = expression.functionLit
-    let params = function.parameters
-    let body = function.body
-    let function_obj = FunctionObj(parameters: params, env: env, body: body)
+    let 
+      function = expression.functionLit
+      params = function.parameters
+      body = function.body
+      function_obj = FunctionObj(parameters: params, env: env, body: body)
 
     return Object(o_type: oFunction, function_obj: function_obj)
   of eCallExpression:
-    let call = expression.callExp
-    let function = evalExpression(call.function, env)
+    let 
+      call = expression.callExp
+      function = evalExpression(call.function, env)
     if isError(function): return function
 
-    let ref_args = evalExpressions(call.arguments, env)
-    let args = ref_args[]
+    let 
+      ref_args = evalExpressions(call.arguments, env)
+      args = ref_args[]
     if args.len == 1 and isError(args[0]): return args[0]
 
     return applyFunction(function, ref_args)
@@ -131,15 +137,17 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
 
     return Object(o_type: oString, string_obj: string_obj)
   of eArrayLiteral:
-    let arrayliteral = expression.arrayLit
-    let elements = evalExpressions(arrayliteral.elements, env)
+    let 
+      arrayliteral = expression.arrayLit
+      elements = evalExpressions(arrayliteral.elements, env)
 
     if elements[].len == 1 and isError(elements[][0]): return elements[0]
 
     return Object(o_type: oArray, array_obj: ArrayObj(elements: elements))
   of eIndexExpression:
-    let index_expression = expression.indexExp
-    let left = evalExpression(index_expression.left, env)
+    let 
+      index_expression = expression.indexExp
+      left = evalExpression(index_expression.left, env)
     if isError(left): return left
 
     let index = evalExpression(index_expression.index, env)
@@ -152,7 +160,6 @@ proc evalExpression(expression: Expression, env: Enviroment): Object =
 proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): ref seq[Object] =
   var objects: ref seq[Object]
   objects.new
-  objects[] = @[]
 
   for expression in expressions[]:
     let evaluted = evalExpression(expression, env)
@@ -160,7 +167,7 @@ proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): ref seq
     if isError(evaluted):
       var error: ref seq[Object]
       error.new
-      error[] = @[]
+      
       error[].add(evaluted)
       return error
 
@@ -171,9 +178,10 @@ proc evalExpressions(expressions: ref seq[Expression], env: Enviroment): ref seq
 proc applyFunction(fn: Object, args: ref seq[Object]): Object =
   case fn.o_type
   of oFunction:
-    let function = fn.function_obj
-    let extendEnv = extendFunctionEnv(function, args)
-    let evaluted = evalStatement(function.body, extendEnv)
+    let 
+      function = fn.function_obj
+      extendEnv = extendFunctionEnv(function, args)
+      evaluted = evalStatement(function.body, extendEnv)
     return unwrapReturnValue(evaluted)
   of oBuiltin:
     let builtin = fn.builtin_obj
@@ -238,16 +246,18 @@ proc evalInfixExpression(operator: string, left: Object, right: Object): Object 
   if is_left_and_right_string(left, right): return evalStringInfixExpression(operator, left, right)
 
   if operator == "==": 
-    let left_val = left.boolean_obj.value
-    let right_val = right.boolean_obj.value
-    let boolean_obj = convNativeBoolToBoolObj(left_val == right_val)
+    let 
+      left_val = left.boolean_obj.value
+      right_val = right.boolean_obj.value
+      boolean_obj = convNativeBoolToBoolObj(left_val == right_val)
 
     return Object(o_type: oBoolean, boolean_obj: boolean_obj)
 
   if operator == "!=":
-    let left_val = left.boolean_obj.value
-    let right_val = right.boolean_obj.value
-    let boolean_obj = convNativeBoolToBoolObj(left_val != right_val)
+    let 
+      left_val = left.boolean_obj.value
+      right_val = right.boolean_obj.value
+      boolean_obj = convNativeBoolToBoolObj(left_val != right_val)
 
     return  Object(o_type: oBoolean, boolean_obj: boolean_obj)
 
@@ -270,13 +280,15 @@ proc evalBangOperatorExpression(right: Object): Object =
 proc evalMinusPrefixOperatorExpression(right: Object): Object =
   if right.o_type != oInteger:
     return newError(fmt"unknown operator: -{$right.o_type}")
-  let value = right.integer_obj.value
-  let integer_obj = IntegerObj(value: -value)
+  let 
+    value = right.integer_obj.value
+    integer_obj = IntegerObj(value: -value)
   return Object(o_type: oInteger, integer_obj: integer_obj)
 
 proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): Object =
-  let leftVal = left.integer_obj.value
-  let rightVal = right.integer_obj.value
+  let 
+    leftVal = left.integer_obj.value
+    rightVal = right.integer_obj.value
 
   case operator
   of "+":
@@ -309,8 +321,9 @@ proc evalIntegerInfixExpression(operator: string, left: Object, right: Object): 
 proc evalStringInfixExpression(operator: string, left: Object, right: Object): Object =
   if operator != "+" : return newError(fmt"unknown operator: {$left.o_type} {operator} {$right.o_type}")
 
-  let combine = left.string_obj.value & right.string_obj.value
-  let string_obj = StringObj(value: combine)
+  let 
+    combine = left.string_obj.value & right.string_obj.value
+    string_obj = StringObj(value: combine)
   return Object(o_type: oString, string_obj: string_obj)
 
 proc isTruthy(obj: Object): bool =
@@ -336,8 +349,10 @@ proc evalIfExpression(expression: IfExpression, env: Enviroment): Object =
     return NULL
 
 proc evalIdentifier(node: Identifier, env: Enviroment): Object =
-  let res = env.getEnv(node.variable_name)
-  let obj = res[0]
+  let 
+    res = env.getEnv(node.variable_name)
+    obj = res[0]
+
   var existance = res[1]
 
   if existance: return obj
@@ -363,8 +378,10 @@ proc evalIndexExpression(left: Object, index: Object): Object =
   return newError(fmt"index operator not supported: {left.o_type}")
 
 proc evalArrayIndexExpression(arr: Object, index: Object): Object =
-  let idx = index.integer_obj.value
-  let max = arr.array_obj.elements[].len - 1
+  let 
+    idx = index.integer_obj.value
+    max = arr.array_obj.elements[].len - 1
+
   if idx < 0 or idx > max: return NULL
 
   return arr.array_obj.elements[idx]
@@ -382,11 +399,6 @@ proc evalBlockStatement(block_statement: BlockStatement, env: Enviroment): Objec
 
   return obj
 
-proc is_hashable(obj: Object): bool = 
-  return obj.o_type == oBoolean or
-         obj.o_type == oInteger or
-         obj.o_type == oString
-
 proc evalHashLiteral(hash_literal: HashLiteral, env: Enviroment): Object =
   var pairs = initTable[Hash, HashPair]()
 
@@ -394,7 +406,7 @@ proc evalHashLiteral(hash_literal: HashLiteral, env: Enviroment): Object =
     let key = evalExpression(keyNode, env)
     if isError(key): return key
 
-    if(not is_hashable(key)):
+    if(not key.isHashAble):
      return newError(fmt"unsable as hash key: {$key.o_type}")
 
     let value = evalExpression(valNode, env)
@@ -408,7 +420,7 @@ proc evalHashLiteral(hash_literal: HashLiteral, env: Enviroment): Object =
 proc evalHashIndexExpression(hash: Object, index: Object): Object =
   let hash_obj = hash.hash_obj
 
-  if (not is_hashable(index)):
+  if(not index.isHashAble):
     return newError(fmt"unsable as hash key: {$index.o_type}")
   
   let existance = hash_obj.pairs.hasKey(index.hashKey())

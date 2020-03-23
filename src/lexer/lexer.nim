@@ -1,5 +1,6 @@
-import ../token/token
-import ../utils/utils
+import
+  ../token/token,
+  ../utils/utils
 
 const
   BYTE_ASSIGN = '='.byte
@@ -28,8 +29,8 @@ type
     position*: int       # current position
     readPosition*: int   # next read position
     ch*: byte            # current looking chara
-  
-# forward declaration 
+
+# forward declaration
 proc readChar*(lex: Lexer): void {.inline.}
 proc newLexer*(input: string): Lexer
 proc skipWhitespace*(lex: Lexer): void
@@ -47,11 +48,9 @@ proc newLexer*(input: string): Lexer =
   return lex
 
 proc readChar*(lex: Lexer): void {.inline.} =
-  if lex.readPosition >= lex.input.len():
-    lex.ch = 0
-  else:
-    lex.ch = lex.input[lex.readPosition].byte
-  
+  lex.ch =
+    if lex.readPosition >= lex.input.len(): 0.byte else: lex.input[lex.readPosition].byte
+
   lex.position = lex.readPosition
   lex.readPosition += 1
 
@@ -60,7 +59,6 @@ proc readNumber*(lex: Lexer): string =
   while utils.isDigit(lex.ch):
     lex.readChar
 
-  # instead of a <= x <= b, use a .. b
   return lex.input[position..( lex.position - 1)]
 
 proc readIdentifiter*(lex: Lexer): string =

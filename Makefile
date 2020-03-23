@@ -39,6 +39,7 @@ monkey_test:
 	nim compile --run test/buildin_test/buildin_test.nim
 
 lexer_test:
+	nim compile src/lexer/lexer.nim
 	nim compile --run test/lexer_test/lexer_test.nim
 
 token_test:
